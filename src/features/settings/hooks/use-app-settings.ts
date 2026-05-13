@@ -5,19 +5,17 @@ import { createSettingsRepository } from "../repositories/settings-repository";
 
 export interface AppSettingsState {
   dailyShareStreakEnabled: boolean;
-  iCloudSyncEnabled: boolean;
   loading: boolean;
   readReminderEnabled: boolean;
   reload: () => Promise<void>;
   setBoolean: (key: AppSettingBooleanKey, value: boolean) => Promise<void>;
 }
 
-export type AppSettingBooleanKey = "dailyShareStreakEnabled" | "iCloudSyncEnabled" | "readReminderEnabled";
+export type AppSettingBooleanKey = "dailyShareStreakEnabled" | "readReminderEnabled";
 
 const defaults: Record<AppSettingBooleanKey, boolean> = {
   dailyShareStreakEnabled: true,
-  iCloudSyncEnabled: false,
-  readReminderEnabled: false
+  readReminderEnabled: false,
 };
 
 export function useAppSettings(): AppSettingsState {
@@ -31,7 +29,9 @@ export function useAppSettings(): AppSettingsState {
     try {
       const repository = createSettingsRepository(db);
       const entries = await Promise.all(
-        settingKeys.map(async (key) => [key, parseBoolean(await repository.get(key), defaults[key])] as const)
+        settingKeys.map(
+          async (key) => [key, parseBoolean(await repository.get(key), defaults[key])] as const,
+        ),
       );
 
       setValues(Object.fromEntries(entries) as Record<AppSettingBooleanKey, boolean>);
@@ -45,7 +45,7 @@ export function useAppSettings(): AppSettingsState {
       await createSettingsRepository(db).set(key, value ? "true" : "false");
       setValues((current) => ({ ...current, [key]: value }));
     },
-    [db]
+    [db],
   );
 
   useEffect(() => {
@@ -54,18 +54,16 @@ export function useAppSettings(): AppSettingsState {
 
   return {
     dailyShareStreakEnabled: values.dailyShareStreakEnabled,
-    iCloudSyncEnabled: values.iCloudSyncEnabled,
     loading,
     readReminderEnabled: values.readReminderEnabled,
     reload,
-    setBoolean
+    setBoolean,
   };
 }
 
 const settingKeys: readonly AppSettingBooleanKey[] = [
   "dailyShareStreakEnabled",
-  "iCloudSyncEnabled",
-  "readReminderEnabled"
+  "readReminderEnabled",
 ];
 
 const parseBoolean = (value: string | undefined, fallback: boolean): boolean => {

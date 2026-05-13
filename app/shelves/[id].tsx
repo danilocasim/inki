@@ -33,12 +33,17 @@ export default function ShelfDetailRoute(): ReactElement {
   return (
     <ShelfDetailContainer
       onOpenBook={(bookId) => router.push({ pathname: "/book/[id]", params: { id: bookId } })}
-      onShareShelf={() => router.push({ pathname: "/share/[cardType]", params: { cardType: "shelf-wall" } })}
+      onShareShelf={() =>
+        router.push({
+          pathname: "/share/[cardType]",
+          params: { cardType: "shelf-wall", sourceId: shelfId },
+        })
+      }
       onViewChange={(nextView) => {
-          setView(nextView);
-          router.setParams({ view: nextView });
-          void createSettingsRepository(db).set(`shelfView.${shelfId}`, nextView);
-        }}
+        setView(nextView);
+        router.setParams({ view: nextView });
+        void createSettingsRepository(db).set(`shelfView.${shelfId}`, nextView);
+      }}
       shelfId={shelfId}
       view={view}
     />
@@ -50,7 +55,7 @@ function ShelfDetailContainer({
   onShareShelf,
   onViewChange,
   shelfId,
-  view
+  view,
 }: {
   onOpenBook: (bookId: string) => void;
   onShareShelf: () => void;
@@ -75,4 +80,5 @@ function ShelfDetailContainer({
 const firstParam = (value: string | readonly string[] | undefined): string | undefined =>
   typeof value === "string" ? value : value?.[0];
 
-const resolveShelfView = (value: string | undefined): ShelfView => (isShelfView(value) ? value : "grid");
+const resolveShelfView = (value: string | undefined): ShelfView =>
+  isShelfView(value) ? value : "grid";

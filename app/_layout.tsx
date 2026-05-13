@@ -12,7 +12,7 @@ import {
   IbarraRealNova_500Medium,
   IbarraRealNova_600SemiBold,
   IbarraRealNova_700Bold,
-  IbarraRealNova_700Bold_Italic
+  IbarraRealNova_700Bold_Italic,
 } from "@expo-google-fonts/ibarra-real-nova";
 
 import { DatabaseProvider } from "../src/lib/db";
@@ -28,15 +28,29 @@ export default function RootLayout(): ReactElement {
     IbarraRealNova_500Medium,
     IbarraRealNova_600SemiBold,
     IbarraRealNova_700Bold,
-    IbarraRealNova_700Bold_Italic
+    IbarraRealNova_700Bold_Italic,
   });
 
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // TODO: remove — forces onboarding to always show during development
-    setOnboarded(false);
-    // hasCompletedOnboarding().then(done => setOnboarded(done));
+    let mounted = true;
+
+    hasCompletedOnboarding()
+      .then((done) => {
+        if (mounted) {
+          setOnboarded(done);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setOnboarded(false);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   if (!fontsLoaded || onboarded === null) {

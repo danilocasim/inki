@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { useMemo, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { BookCover } from "../books/BookCover";
 import type { Book } from "../books/types";
@@ -8,7 +9,7 @@ import {
   getShelfById,
   shelfViews,
   spineSorts,
-  type ShelfView
+  type ShelfView,
 } from "../dashboard/fixtures";
 import type { Shelf } from "./types";
 import { Button } from "../../ui/Button";
@@ -35,31 +36,33 @@ export function ShelfDetailScreen({
   onViewChange,
   shelf: providedShelf,
   shelfId,
-  view
+  view,
 }: ShelfDetailScreenProps): ReactElement {
   const fixtureShelf = getShelfById(shelfId);
-  const shelf = providedShelf ?? (fixtureShelf
-    ? {
-        accent: fixtureShelf.accent,
-        books: fixtureShelf.bookIds.map(getBookById).map((book) => ({
-          author: book.author,
-          currentPage: book.progress ?? 0,
-          genre: book.genre,
-          id: book.id,
-          isChangedYou: false,
-          palette: book.palette,
-          progress: book.progress,
-          status: book.status,
-          title: book.title,
-          year: book.year
-        })),
-        count: fixtureShelf.bookIds.length,
-        id: fixtureShelf.id,
-        kind: "custom" as const,
-        subtitle: fixtureShelf.subtitle,
-        title: fixtureShelf.title
-      }
-    : undefined);
+  const shelf =
+    providedShelf ??
+    (fixtureShelf
+      ? {
+          accent: fixtureShelf.accent,
+          books: fixtureShelf.bookIds.map(getBookById).map((book) => ({
+            author: book.author,
+            currentPage: book.progress ?? 0,
+            genre: book.genre,
+            id: book.id,
+            isChangedYou: false,
+            palette: book.palette,
+            progress: book.progress,
+            status: book.status,
+            title: book.title,
+            year: book.year,
+          })),
+          count: fixtureShelf.bookIds.length,
+          id: fixtureShelf.id,
+          kind: "custom" as const,
+          subtitle: fixtureShelf.subtitle,
+          title: fixtureShelf.title,
+        }
+      : undefined);
 
   if (!shelf) {
     return (
@@ -86,7 +89,7 @@ export function ShelfDetailScreen({
 const renderShelfView = (
   view: ShelfView,
   books: readonly Book[],
-  onOpenBook: (bookId: string) => void
+  onOpenBook: (bookId: string) => void,
 ): ReactElement => {
   switch (view) {
     case "grid":
@@ -94,13 +97,13 @@ const renderShelfView = (
     case "list":
       return <ListView books={books} onOpenBook={onOpenBook} />;
     case "spine":
-      return <SpineView books={books} />;
+      return <SpineView books={books} onOpenBook={onOpenBook} />;
   }
 };
 
 function GridView({
   books,
-  onOpenBook
+  onOpenBook,
 }: {
   books: readonly Book[];
   onOpenBook: (bookId: string) => void;
@@ -108,8 +111,8 @@ function GridView({
   return (
     <View style={styles.grid}>
       {books.map((book) => (
-        <Pressable key={book.id} onPress={() => onOpenBook(book.id)}>
-          <BookCover book={book} showAuthor={false} size="lg" />
+        <Pressable key={book.id} onPress={() => onOpenBook(book.id)} style={styles.gridItem}>
+          <BookCover book={book} showAuthor={false} size="md" />
         </Pressable>
       ))}
     </View>
@@ -118,7 +121,7 @@ function GridView({
 
 function ListView({
   books,
-  onOpenBook
+  onOpenBook,
 }: {
   books: readonly Book[];
   onOpenBook: (bookId: string) => void;
@@ -128,14 +131,14 @@ function ListView({
       {books.map((book) => (
         <Pressable key={book.id} onPress={() => onOpenBook(book.id)}>
           <Card style={styles.listRow}>
-          <BookCover book={book} showAuthor={false} size="sm" />
-          <View style={styles.listMeta}>
-            <Text variant="bodyStrong">{book.title}</Text>
-            <Text tone="muted">{book.author}</Text>
-            <Text tone="accent" variant="caption">
-              {book.progress !== undefined ? `${book.progress}%` : "not yet"}
-            </Text>
-          </View>
+            <BookCover book={book} showAuthor={false} size="sm" />
+            <View style={styles.listMeta}>
+              <Text variant="bodyStrong">{book.title}</Text>
+              <Text tone="muted">{book.author}</Text>
+              <Text tone="accent" variant="caption">
+                {book.progress !== undefined ? `${book.progress}%` : "not yet"}
+              </Text>
+            </View>
           </Card>
         </Pressable>
       ))}
@@ -143,31 +146,65 @@ function ListView({
   );
 }
 
-function SpineView({ books }: { books: readonly Book[] }): ReactElement {
-  const selectedBook = books[0];
+type SpineSort = (typeof spineSorts)[number];
+
+function SpineView({
+  books,
+  onOpenBook,
+}: {
+  books: readonly Book[];
+  onOpenBook: (bookId: string) => void;
+}): ReactElement {
+  const [sort, setSort] = useState<SpineSort>("year");
+  const [selectedBookId, setSelectedBookId] = useState<string | undefined>(books[0]?.id);
+  const sortedBooks = useMemo(() => sortBooksForSpine(books, sort), [books, sort]);
+  const selectedBook = sortedBooks.find((book) => book.id === selectedBookId) ?? sortedBooks[0];
 
   return (
     <View style={styles.spineWrap}>
       <View style={styles.sortRow}>
-        {spineSorts.map((sort) => (
-          <View key={sort} style={styles.sortChip}>
-            <Text variant="caption">{sort}</Text>
-          </View>
+        {spineSorts.map((option) => (
+          <Pressable
+            accessibilityRole="button"
+            key={option}
+            onPress={() => setSort(option)}
+            style={[styles.sortChip, option === sort ? styles.sortChipActive : undefined]}
+          >
+            <Text tone={option === sort ? "button" : "default"} variant="caption">
+              {option}
+            </Text>
+          </Pressable>
         ))}
       </View>
 
-      <View style={styles.spineShelf}>
-        {books.map((book) => (
-          <View key={book.id} style={[styles.spineBook, { backgroundColor: book.palette.spine }]}>
-            <Text numberOfLines={1} style={styles.spineText} tone="inverse" variant="caption">
-              {book.title}
-            </Text>
-          </View>
-        ))}
-      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View style={styles.spineShelf}>
+          {sortedBooks.map((book) => {
+            const selected = book.id === selectedBook?.id;
+
+            return (
+              <Pressable
+                accessibilityLabel={`Select ${book.title}`}
+                accessibilityRole="button"
+                key={book.id}
+                onPress={() => setSelectedBookId(book.id)}
+                style={[
+                  styles.spineBook,
+                  selected ? styles.spineBookSelected : undefined,
+                  { backgroundColor: book.palette.spine },
+                ]}
+              >
+                <Text numberOfLines={1} style={styles.spineText} tone="inverse" variant="caption">
+                  {book.title}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </ScrollView>
 
       {selectedBook ? (
-        <Card>
+        <Card style={styles.selectedCard}>
           <Text tone="muted" variant="eyebrow">
             selected spine
           </Text>
@@ -175,11 +212,38 @@ function SpineView({ books }: { books: readonly Book[] }): ReactElement {
           <Text tone="muted">
             {selectedBook.author} · {selectedBook.year} · {selectedBook.genre}
           </Text>
+          <Button
+            label="open book"
+            onPress={() => onOpenBook(selectedBook.id)}
+            variant="secondary"
+          />
         </Card>
       ) : null}
     </View>
   );
 }
+
+const sortBooksForSpine = (books: readonly Book[], sort: SpineSort): Book[] =>
+  [...books].sort((left, right) => {
+    if (sort === "year") {
+      return right.year.localeCompare(left.year) || left.title.localeCompare(right.title);
+    }
+
+    if (sort === "color") {
+      return (
+        left.palette.spine.localeCompare(right.palette.spine) ||
+        left.title.localeCompare(right.title)
+      );
+    }
+
+    if (sort === "genre") {
+      return (
+        (left.genre ?? "").localeCompare(right.genre ?? "") || left.title.localeCompare(right.title)
+      );
+    }
+
+    return left.author.localeCompare(right.author) || left.title.localeCompare(right.title);
+  });
 
 const noop = (): void => undefined;
 const noopOpenBook = (_bookId: string): void => undefined;
@@ -189,48 +253,67 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: tokens.space[4],
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+  },
+  gridItem: {
+    width: 96,
   },
   list: {
-    gap: tokens.space[3]
+    gap: tokens.space[3],
   },
   listMeta: {
     flex: 1,
-    gap: tokens.space[1]
+    gap: tokens.space[1],
   },
   listRow: {
     alignItems: "center",
     flexDirection: "row",
-    gap: tokens.space[4]
+    gap: tokens.space[4],
   },
   sortChip: {
     backgroundColor: tokens.color.surfaceMuted,
     borderRadius: tokens.radius.pill,
+    borderColor: tokens.color.border,
+    borderWidth: 1,
     paddingHorizontal: tokens.space[3],
-    paddingVertical: tokens.space[2]
+    paddingVertical: tokens.space[2],
+  },
+  sortChipActive: {
+    backgroundColor: tokens.color.accent,
+    borderColor: tokens.color.accent,
   },
   sortRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: tokens.space[2]
+    gap: tokens.space[2],
   },
   spineBook: {
     borderRadius: tokens.radius.sm,
-    height: 180,
-    justifyContent: "flex-end",
+    height: 210,
+    justifyContent: "center",
+    overflow: "hidden",
     padding: tokens.space[2],
-    width: 42
+    width: 56,
+  },
+  spineBookSelected: {
+    borderColor: tokens.color.accent,
+    borderWidth: 2,
   },
   spineShelf: {
     alignItems: "flex-end",
     flexDirection: "row",
-    gap: tokens.space[2]
+    gap: tokens.space[2],
+    paddingRight: tokens.space[5],
   },
   spineText: {
+    textAlign: "center",
     transform: [{ rotate: "-90deg" }],
-    width: 150
+    width: 170,
   },
   spineWrap: {
-    gap: tokens.space[4]
-  }
+    gap: tokens.space[4],
+  },
+  selectedCard: {
+    gap: tokens.space[3],
+  },
 });

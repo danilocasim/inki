@@ -18,7 +18,7 @@ export interface NotificationsScreenProps {
 export function NotificationsScreen({
   items,
   loading = false,
-  onOpenItem = noopOpenItem
+  onOpenItem = noopOpenItem,
 }: NotificationsScreenProps): ReactElement {
   if (loading) {
     return (
@@ -46,11 +46,17 @@ export function NotificationsScreen({
             >
               <Card style={styles.item} variant="ink">
                 <View style={styles.iconBadge}>
-                  <Feather color={tokens.color.accent} name={iconForNotificationType(item.type)} size={20} />
+                  <Feather
+                    color={tokens.color.accent}
+                    name={iconForNotificationType(item.type)}
+                    size={20}
+                  />
                 </View>
                 <View style={styles.itemCopy}>
                   <View style={styles.itemHeader}>
-                    <Text variant="bodyStrong">{item.title}</Text>
+                    <Text style={styles.itemTitle} variant="bodyStrong">
+                      {item.title}
+                    </Text>
                     {!item.isRead ? <View style={styles.unreadDot} /> : null}
                   </View>
                   <Text tone="muted">{item.body}</Text>
@@ -73,7 +79,9 @@ export function NotificationsScreen({
 const formatTime = (iso: string): string => {
   const date = new Date(iso);
 
-  return Number.isNaN(date.getTime()) ? "local" : date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  return Number.isNaN(date.getTime())
+    ? "local"
+    : date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 };
 
 const iconForNotificationType = (type: string): "bell" | "book-open" | "share-2" | "zap" => {
@@ -97,11 +105,11 @@ const noopOpenItem = (_item: NotificationLogItem): void => undefined;
 const styles = StyleSheet.create({
   content: {
     gap: tokens.space[5],
-    paddingTop: tokens.space[6]
+    paddingTop: tokens.space[6],
   },
   footer: {
     marginTop: tokens.space[6],
-    textAlign: "center"
+    textAlign: "center",
   },
   iconBadge: {
     alignItems: "center",
@@ -109,30 +117,35 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.pill,
     height: 48,
     justifyContent: "center",
-    width: 48
+    width: 48,
   },
   item: {
-    alignItems: "center",
+    alignItems: "flex-start",
     flexDirection: "row",
     gap: tokens.space[4],
-    minHeight: 124
+    minHeight: 124,
   },
   itemCopy: {
     flex: 1,
-    gap: tokens.space[2]
+    gap: tokens.space[2],
   },
   itemHeader: {
-    alignItems: "center",
+    alignItems: "flex-start",
     flexDirection: "row",
-    gap: tokens.space[2]
+    gap: tokens.space[2],
+    justifyContent: "space-between",
+  },
+  itemTitle: {
+    flex: 1,
   },
   list: {
-    gap: tokens.space[3]
+    gap: tokens.space[3],
   },
   unreadDot: {
     backgroundColor: tokens.color.accent,
     borderRadius: tokens.radius.pill,
     height: 7,
-    width: 7
-  }
+    marginTop: 8,
+    width: 7,
+  },
 });

@@ -46,23 +46,133 @@ export interface ProfileAction {
 
 /** Book labels and palettes extracted from the initial Figma mobile frames. */
 export const figmaBooks: readonly FigmaBook[] = [
-  makeBook("piranesi", "Piranesi", "Susanna Clarke", "reading", 42, "fantasy", "2020", "#D6C6A3", "#8A5C36"),
-  makeBook("klara", "Klara and the Sun", "Kazuo Ishiguro", "recent", 100, "sci-fi", "2021", "#C98A6A", "#7D3F26"),
-  makeBook("overstory", "The Overstory", "Richard Powers", "reading", 31, "literary fiction", "2018", "#81906E", "#3E513A"),
-  makeBook("tomb", "Tomb of Sand", "Geetanjali Shree", "want-to-read", undefined, "translated", "2018", "#D8A24A", "#8C6222"),
-  makeBook("bewilderment", "Bewilderment", "Richard Powers", "recent", 100, "sci-fi", "2021", "#9C6F88", "#5A344B"),
-  makeBook("crossroads", "Crossroads", "Jonathan Franzen", "reading", 18, "family saga", "2021", "#A55D44", "#713529"),
-  makeBook("normal-people", "Normal People", "S. Rooney", "reading", 72, "contemporary", "2018", "#B9C5D8", "#5C6B82"),
-  makeBook("demon", "Demon Copperhead", "B. Kingsolver", "finished", 100, "literary fiction", "2022", "#BD704E", "#793C25"),
-  makeBook("remains", "Remains of the Day", "Kazuo Ishiguro", "finished", 100, "classic", "1989", "#8A9A8E", "#425248"),
-  makeBook("babel", "Babel", "R.F. Kuang", "want-to-read", undefined, "fantasy", "2022", "#4F5B74", "#283246"),
-  makeBook("pachinko", "Pachinko", "M. Lee", "not-yet", undefined, "historical", "2017", "#CDAA68", "#7F6130")
+  makeBook(
+    "piranesi",
+    "Piranesi",
+    "Susanna Clarke",
+    "reading",
+    42,
+    "fantasy",
+    "2020",
+    "#D6C6A3",
+    "#8A5C36",
+  ),
+  makeBook(
+    "klara",
+    "Klara and the Sun",
+    "Kazuo Ishiguro",
+    "recent",
+    100,
+    "sci-fi",
+    "2021",
+    "#C98A6A",
+    "#7D3F26",
+  ),
+  makeBook(
+    "overstory",
+    "The Overstory",
+    "Richard Powers",
+    "reading",
+    31,
+    "literary fiction",
+    "2018",
+    "#81906E",
+    "#3E513A",
+  ),
+  makeBook(
+    "tomb",
+    "Tomb of Sand",
+    "Geetanjali Shree",
+    "want-to-read",
+    undefined,
+    "translated",
+    "2018",
+    "#D8A24A",
+    "#8C6222",
+  ),
+  makeBook(
+    "bewilderment",
+    "Bewilderment",
+    "Richard Powers",
+    "recent",
+    100,
+    "sci-fi",
+    "2021",
+    "#9C6F88",
+    "#5A344B",
+  ),
+  makeBook(
+    "crossroads",
+    "Crossroads",
+    "Jonathan Franzen",
+    "reading",
+    18,
+    "family saga",
+    "2021",
+    "#A55D44",
+    "#713529",
+  ),
+  makeBook(
+    "normal-people",
+    "Normal People",
+    "S. Rooney",
+    "reading",
+    72,
+    "contemporary",
+    "2018",
+    "#B9C5D8",
+    "#5C6B82",
+  ),
+  makeBook(
+    "demon",
+    "Demon Copperhead",
+    "B. Kingsolver",
+    "finished",
+    100,
+    "literary fiction",
+    "2022",
+    "#BD704E",
+    "#793C25",
+  ),
+  makeBook(
+    "remains",
+    "Remains of the Day",
+    "Kazuo Ishiguro",
+    "finished",
+    100,
+    "classic",
+    "1989",
+    "#8A9A8E",
+    "#425248",
+  ),
+  makeBook(
+    "babel",
+    "Babel",
+    "R.F. Kuang",
+    "want-to-read",
+    undefined,
+    "fantasy",
+    "2022",
+    "#4F5B74",
+    "#283246",
+  ),
+  makeBook(
+    "pachinko",
+    "Pachinko",
+    "M. Lee",
+    "not-yet",
+    undefined,
+    "historical",
+    "2017",
+    "#CDAA68",
+    "#7F6130",
+  ),
 ];
 
 export const homeTabs: readonly SegmentOption<BookStatus>[] = [
   { label: "reading", value: "reading" },
   { label: "recent", value: "recent" },
-  { label: "want to read", value: "want-to-read" }
+  { label: "want to read", value: "want-to-read" },
 ];
 
 export const shelfFilters: readonly SegmentOption<BookStatus | "all">[] = [
@@ -70,13 +180,13 @@ export const shelfFilters: readonly SegmentOption<BookStatus | "all">[] = [
   { label: "reading", value: "reading" },
   { label: "finished", value: "finished" },
   { label: "want to read", value: "want-to-read" },
-  { label: "not yet", value: "not-yet" }
+  { label: "not yet", value: "not-yet" },
 ];
 
 export const shelfViews: readonly SegmentOption<ShelfView>[] = [
   { label: "grid", value: "grid" },
   { label: "list", value: "list" },
-  { label: "spine", value: "spine" }
+  { label: "spine", value: "spine" },
 ];
 
 export const spineSorts = ["year", "color", "genre", "author"] as const;
@@ -87,14 +197,14 @@ export const figmaDashboard = {
   pulseItems: [
     "3 days since the last finished book",
     "11 pages logged this morning",
-    "1 quote saved from Piranesi"
+    "1 quote saved from Piranesi",
   ],
   stackBookIds: ["piranesi", "klara", "overstory", "tomb", "bewilderment", "crossroads"],
   stats: [
     { detail: "this month", label: "bookmark", value: "14" },
-    { detail: "days alive", label: "continuity", value: "8" }
+    { detail: "days alive", label: "continuity", value: "8" },
   ],
-  tabs: homeTabs
+  tabs: homeTabs,
 } as const;
 
 /** Shelf overview and detail fixtures for Figma frames 4:2 through 4:466. */
@@ -106,7 +216,7 @@ export const figmaShelves: readonly FigmaShelf[] = [
     frameIds: ["4:256", "4:355", "4:466"],
     id: "midnight-reads",
     subtitle: "intimate, strange, and impossible to put down",
-    title: "midnight reads"
+    title: "midnight reads",
   },
   {
     accent: "#65785C",
@@ -115,7 +225,7 @@ export const figmaShelves: readonly FigmaShelf[] = [
     frameIds: ["4:2", "4:129"],
     id: "forest-books",
     subtitle: "green books about memory and roots",
-    title: "forest books"
+    title: "forest books",
   },
   {
     accent: "#C69A45",
@@ -124,7 +234,7 @@ export const figmaShelves: readonly FigmaShelf[] = [
     frameIds: ["4:2", "4:129"],
     id: "bright-strange",
     subtitle: "language, machines, and luminous futures",
-    title: "bright strange"
+    title: "bright strange",
   },
   {
     accent: "#4F5B74",
@@ -133,8 +243,8 @@ export const figmaShelves: readonly FigmaShelf[] = [
     frameIds: ["4:2", "4:129"],
     id: "family-systems",
     subtitle: "people making a mess of love",
-    title: "family systems"
-  }
+    title: "family systems",
+  },
 ];
 
 /** Private local-only profile fixture for Figma frame 4:691. */
@@ -143,7 +253,6 @@ export const figmaProfile = {
     { detail: "11 card formats, rendered on device", label: "reading wrapped" },
     { detail: "PDF and image archive for your shelves", label: "annual passport" },
     { detail: "JSON plus covers, saved from this phone", label: "export library" },
-    { detail: "optional file backup, no account required", label: "iCloud sync" }
   ] satisfies readonly ProfileAction[],
   frameIds: ["4:691"] as const,
   genres: ["literary fiction", "contemporary", "romance", "sci-fi"],
@@ -152,8 +261,8 @@ export const figmaProfile = {
   stats: [
     { detail: "finished", label: "books", value: "38" },
     { detail: "saved", label: "quotes", value: "126" },
-    { detail: "active", label: "streak", value: "8" }
-  ]
+    { detail: "active", label: "streak", value: "8" },
+  ],
 } as const;
 
 export const isShelfView = (value: string | undefined): value is ShelfView =>
@@ -181,7 +290,7 @@ function makeBook(
   genre: string,
   year: string,
   cover: string,
-  spine: string
+  spine: string,
 ): FigmaBook {
   const book: Omit<FigmaBook, "progress"> = {
     author,
@@ -191,7 +300,7 @@ function makeBook(
     palette: { cover, spine, text: "#FFF9F0" },
     status,
     title,
-    year
+    year,
   };
 
   return progress === undefined ? book : { ...book, progress };

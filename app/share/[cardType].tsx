@@ -9,15 +9,21 @@ import { useDashboardData } from "../../src/features/dashboard/hooks/use-dashboa
 import { recordShareEvent } from "../../src/features/share-cards";
 import { isShareCardType } from "../../src/features/share-cards/share-card-types";
 import { WrappedScreen } from "../../src/features/share-cards/screens/WrappedScreen";
+import { useShelfDetail } from "../../src/features/shelves/hooks/use-shelf-detail";
 import { EmptyState } from "../../src/ui/EmptyState";
 import { Screen } from "../../src/ui/Screen";
 
 export default function ShareCardRoute(): ReactElement {
   const db = useSQLiteContext();
   const router = useRouter();
-  const { cardType } = useLocalSearchParams<{ cardType?: string | string[] }>();
+  const { cardType, sourceId } = useLocalSearchParams<{
+    cardType?: string | string[];
+    sourceId?: string | string[];
+  }>();
   const value = typeof cardType === "string" ? cardType : undefined;
+  const source = typeof sourceId === "string" ? sourceId : undefined;
   const { data } = useDashboardData();
+  const { shelf } = useShelfDetail(value === "shelf-wall" && source ? source : "");
   const [shareLoading, setShareLoading] = useState(false);
   const [shareMessage, setShareMessage] = useState<string | undefined>();
 
@@ -42,7 +48,7 @@ export default function ShareCardRoute(): ReactElement {
       const outputPath = await captureRef(cardRef, {
         format: "png",
         quality: 1,
-        result: "tmpfile"
+        result: "tmpfile",
       });
       const sharingAvailable = await Sharing.isAvailableAsync();
 
@@ -50,14 +56,15 @@ export default function ShareCardRoute(): ReactElement {
         await Sharing.shareAsync(outputPath, {
           dialogTitle: "Share Inki card",
           mimeType: "image/png",
-          UTI: "public.png"
+          UTI: "public.png",
         });
       }
 
       await recordShareEvent(db, {
         cardType: value,
         outputPath,
-        usedForStreak: value === "wrapped"
+        sourceId: source,
+        usedForStreak: value === "wrapped",
       });
       setShareMessage("share card saved");
     } catch (caught) {
@@ -73,6 +80,7 @@ export default function ShareCardRoute(): ReactElement {
       data={data}
       onClose={() => router.back()}
       onShareCard={handleShareCard}
+      shelf={shelf}
       shareLoading={shareLoading}
       shareMessage={shareMessage}
     />

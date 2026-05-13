@@ -15,7 +15,7 @@ describe("static Figma screen shells", () => {
   it("renders the home dashboard labels", () => {
     renderWithProviders(<DashboardScreen />);
 
-    expect(screen.getByText("Add Book")).toBeTruthy();
+    expect(screen.getByLabelText("Add Book")).toBeTruthy();
     expect(screen.getByText("The Stack")).toBeTruthy();
     expect(screen.getByText("The Pulse")).toBeTruthy();
   });
@@ -28,7 +28,7 @@ describe("static Figma screen shells", () => {
         onOpenShelf={(shelfId) => {
           openedShelf = shelfId;
         }}
-      />
+      />,
     );
 
     expect(screen.getByText("MY SHELVES — 4")).toBeTruthy();
@@ -39,7 +39,7 @@ describe("static Figma screen shells", () => {
 
   it("renders the shelf detail grid shell", () => {
     renderWithProviders(
-      <ShelfDetailScreen onViewChange={noop} shelfId="midnight-reads" view="grid" />
+      <ShelfDetailScreen onViewChange={noop} shelfId="midnight-reads" view="grid" />,
     );
 
     expect(screen.getByText("grid")).toBeTruthy();
@@ -50,7 +50,7 @@ describe("static Figma screen shells", () => {
 
   it("renders the shelf detail list and spine variants", () => {
     const listRender = renderWithProviders(
-      <ShelfDetailScreen onViewChange={noop} shelfId="midnight-reads" view="list" />
+      <ShelfDetailScreen onViewChange={noop} shelfId="midnight-reads" view="list" />,
     );
 
     expect(screen.getAllByText("Normal People").length).toBeGreaterThan(0);
@@ -58,7 +58,7 @@ describe("static Figma screen shells", () => {
     listRender.unmount();
 
     renderWithProviders(
-      <ShelfDetailScreen onViewChange={noop} shelfId="midnight-reads" view="spine" />
+      <ShelfDetailScreen onViewChange={noop} shelfId="midnight-reads" view="spine" />,
     );
 
     expect(screen.getByText("year")).toBeTruthy();
@@ -84,10 +84,10 @@ describe("static Figma screen shells", () => {
             id: "n1",
             isRead: false,
             title: "12 day share streak",
-            type: "share-streak"
-          }
+            type: "share-streak",
+          },
         ]}
-      />
+      />,
     );
 
     expect(screen.getByText("notifications")).toBeTruthy();
@@ -105,7 +105,7 @@ describe("static Figma screen shells", () => {
         label="BARCODE"
         onManualFallback={noop}
         title="scan barcode"
-      />
+      />,
     );
     expect(screen.getByText("BARCODE")).toBeTruthy();
 
