@@ -4,18 +4,28 @@ import { Stack, type ErrorBoundaryProps } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { DatabaseProvider } from "../src/lib/db";
 import { ErrorState } from "../src/ui/ErrorState";
 
 /** Root Expo Router layout: providers only, no auth gate by design. */
 export default function RootLayout(): ReactElement {
   return (
     <SafeAreaProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="shelves/[id]" />
-        <Stack.Screen name="settings" />
-      </Stack>
-      <StatusBar style="dark" />
+      <DatabaseProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(modals)/log-book" options={{ presentation: "modal" }} />
+          <Stack.Screen name="book/[id]" />
+          <Stack.Screen name="shelves/[id]" />
+          <Stack.Screen name="settings" />
+          <Stack.Screen name="notifications" />
+          <Stack.Screen name="capture/index" />
+          <Stack.Screen name="capture/barcode" />
+          <Stack.Screen name="capture/page" />
+          <Stack.Screen name="share/[cardType]" />
+        </Stack>
+        <StatusBar style="dark" />
+      </DatabaseProvider>
     </SafeAreaProvider>
   );
 }

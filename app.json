@@ -19,6 +19,17 @@
       "bundler": "metro",
       "output": "static"
     },
-    "plugins": ["expo-router", "expo-splash-screen"]
+    "plugins": [
+      "expo-router",
+      "expo-splash-screen",
+      "expo-sqlite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Inki to scan ISBN barcodes and capture quote pages.",
+          "recordAudioAndroid": false
+        }
+      ]
+    ]
   }
 }

@@ -6,5 +6,11 @@ import { PrivateProfileScreen } from "../../src/features/profile/PrivateProfileS
 export default function ProfileRoute(): ReactElement {
   const router = useRouter();
 
-  return <PrivateProfileScreen onOpenSettings={() => router.push("/settings")} />;
+  return (
+    <PrivateProfileScreen
+      onOpenNotifications={() => router.push("/notifications")}
+      onOpenSettings={() => router.push("/settings")}
+      onOpenWrapped={() => router.push({ pathname: "/share/[cardType]", params: { cardType: "wrapped" } })}
+    />
+  );
 }

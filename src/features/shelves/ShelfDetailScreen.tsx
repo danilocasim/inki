@@ -1,15 +1,16 @@
 import type { ReactElement } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import { BookCover } from "../books/BookCover";
+import type { Book } from "../books/types";
 import {
   getBookById,
   getShelfById,
   shelfViews,
   spineSorts,
-  type FigmaBook,
   type ShelfView
 } from "../dashboard/fixtures";
+import type { Shelf } from "./types";
 import { Button } from "../../ui/Button";
 import { Card } from "../../ui/Card";
 import { EmptyState } from "../../ui/EmptyState";
@@ -19,18 +20,44 @@ import { Text } from "../../ui/Text";
 import { tokens } from "../../ui/tokens";
 
 export interface ShelfDetailScreenProps {
+  onOpenBook?: (bookId: string) => void;
   onViewChange: (view: ShelfView) => void;
+  shelf?: Shelf | undefined;
   shelfId: string;
   view: ShelfView;
 }
 
 /** Static shelf detail route that switches among grid, list, and spine views. */
 export function ShelfDetailScreen({
+  onOpenBook = noopOpenBook,
   onViewChange,
+  shelf: providedShelf,
   shelfId,
   view
 }: ShelfDetailScreenProps): ReactElement {
-  const shelf = getShelfById(shelfId);
+  const fixtureShelf = getShelfById(shelfId);
+  const shelf = providedShelf ?? (fixtureShelf
+    ? {
+        accent: fixtureShelf.accent,
+        books: fixtureShelf.bookIds.map(getBookById).map((book) => ({
+          author: book.author,
+          currentPage: book.progress ?? 0,
+          genre: book.genre,
+          id: book.id,
+          isChangedYou: false,
+          palette: book.palette,
+          progress: book.progress,
+          status: book.status,
+          title: book.title,
+          year: book.year
+        })),
+        count: fixtureShelf.bookIds.length,
+        id: fixtureShelf.id,
+        kind: "custom" as const,
+        subtitle: fixtureShelf.subtitle,
+        title: fixtureShelf.title
+      }
+    : undefined);
 
   if (!shelf) {
     return (
@@ -43,43 +70,62 @@ export function ShelfDetailScreen({
     );
   }
 
-  const books = shelf.bookIds.map(getBookById);
+  const books = shelf.books ?? [];
 
   return (
     <Screen subtitle={shelf.subtitle} title={shelf.title}>
       <SegmentedControl onValueChange={onViewChange} options={shelfViews} value={view} />
-      {renderShelfView(view, books)}
+      {renderShelfView(view, books, onOpenBook)}
       <Button label="share shelf" onPress={noop} />
     </Screen>
   );
 }
 
-const renderShelfView = (view: ShelfView, books: readonly FigmaBook[]): ReactElement => {
+const renderShelfView = (
+  view: ShelfView,
+  books: readonly Book[],
+  onOpenBook: (bookId: string) => void
+): ReactElement => {
   switch (view) {
     case "grid":
-      return <GridView books={books} />;
+      return <GridView books={books} onOpenBook={onOpenBook} />;
     case "list":
-      return <ListView books={books} />;
+      return <ListView books={books} onOpenBook={onOpenBook} />;
     case "spine":
       return <SpineView books={books} />;
   }
 };
 
-function GridView({ books }: { books: readonly FigmaBook[] }): ReactElement {
+function GridView({
+  books,
+  onOpenBook
+}: {
+  books: readonly Book[];
+  onOpenBook: (bookId: string) => void;
+}): ReactElement {
   return (
     <View style={styles.grid}>
       {books.map((book) => (
-        <BookCover book={book} key={book.id} showAuthor={false} size="lg" />
+        <Pressable key={book.id} onPress={() => onOpenBook(book.id)}>
+          <BookCover book={book} showAuthor={false} size="lg" />
+        </Pressable>
       ))}
     </View>
   );
 }
 
-function ListView({ books }: { books: readonly FigmaBook[] }): ReactElement {
+function ListView({
+  books,
+  onOpenBook
+}: {
+  books: readonly Book[];
+  onOpenBook: (bookId: string) => void;
+}): ReactElement {
   return (
     <View style={styles.list}>
       {books.map((book) => (
-        <Card key={book.id} style={styles.listRow}>
+        <Pressable key={book.id} onPress={() => onOpenBook(book.id)}>
+          <Card style={styles.listRow}>
           <BookCover book={book} showAuthor={false} size="sm" />
           <View style={styles.listMeta}>
             <Text variant="bodyStrong">{book.title}</Text>
@@ -88,13 +134,14 @@ function ListView({ books }: { books: readonly FigmaBook[] }): ReactElement {
               {book.progress !== undefined ? `${book.progress}%` : "not yet"}
             </Text>
           </View>
-        </Card>
+          </Card>
+        </Pressable>
       ))}
     </View>
   );
 }
 
-function SpineView({ books }: { books: readonly FigmaBook[] }): ReactElement {
+function SpineView({ books }: { books: readonly Book[] }): ReactElement {
   const selectedBook = books[0];
 
   return (
@@ -133,6 +180,7 @@ function SpineView({ books }: { books: readonly FigmaBook[] }): ReactElement {
 }
 
 const noop = (): void => undefined;
+const noopOpenBook = (_bookId: string): void => undefined;
 
 const styles = StyleSheet.create({
   grid: {

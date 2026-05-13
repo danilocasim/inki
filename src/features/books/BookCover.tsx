@@ -1,16 +1,24 @@
 import type { ReactElement } from "react";
 import { StyleSheet, View } from "react-native";
 
-import type { FigmaBook } from "../dashboard/fixtures";
 import { Text } from "../../ui/Text";
 import { tokens } from "../../ui/tokens";
 
 export type BookCoverSize = "sm" | "md" | "lg";
 
 export interface BookCoverProps {
-  book: FigmaBook;
+  book: BookCoverBook;
   showAuthor?: boolean;
   size?: BookCoverSize;
+}
+
+export interface BookCoverBook {
+  author: string;
+  palette: {
+    cover: string;
+    spine: string;
+  };
+  title: string;
 }
 
 /** Static cover primitive for the Figma fixture pass before image storage exists. */

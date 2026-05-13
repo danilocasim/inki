@@ -1,7 +1,12 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 
 import { DashboardScreen } from "../dashboard/DashboardScreen";
+import { CaptureHubScreen } from "../capture/CaptureHubScreen";
+import { CameraFrameScreen } from "../capture/CameraFrameScreen";
+import { NotificationsScreen } from "../notifications/screens/NotificationsScreen";
 import { PrivateProfileScreen } from "../profile/PrivateProfileScreen";
+import { SettingsScreen } from "../settings/SettingsScreen";
+import { WrappedScreen } from "../share-cards/screens/WrappedScreen";
 import { ShelfDetailScreen } from "../shelves/ShelfDetailScreen";
 import { ShelfOverviewScreen } from "../shelves/ShelfOverviewScreen";
 import { renderWithProviders } from "../../test/render";
@@ -68,6 +73,49 @@ describe("static Figma screen shells", () => {
     expect(screen.getByText("@anya")).toBeTruthy();
     expect(screen.getByText("local-only")).toBeTruthy();
     expect(screen.getByText("reading wrapped")).toBeTruthy();
+  });
+
+  it("renders notification and capture screenshot labels", () => {
+    renderWithProviders(
+      <NotificationsScreen
+        items={[
+          {
+            body: "Tap to share today's read and keep the streak alive.",
+            id: "n1",
+            isRead: false,
+            title: "12 day share streak",
+            type: "share-streak"
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByText("notifications")).toBeTruthy();
+    expect(screen.getByText("12 day share streak")).toBeTruthy();
+
+    renderWithProviders(<CaptureHubScreen onCaptureQuote={noop} onScanIsbn={noop} />);
+    expect(screen.getByText("scan ISBN")).toBeTruthy();
+    expect(screen.getByText("capture quote")).toBeTruthy();
+  });
+
+  it("renders camera frame, settings, and wrapped labels", () => {
+    renderWithProviders(
+      <CameraFrameScreen
+        caption="manual fallback works offline"
+        label="BARCODE"
+        onManualFallback={noop}
+        title="scan barcode"
+      />
+    );
+    expect(screen.getByText("BARCODE")).toBeTruthy();
+
+    renderWithProviders(<SettingsScreen />);
+    expect(screen.getByText("NOTIFICATIONS")).toBeTruthy();
+    expect(screen.getByText("export all data")).toBeTruthy();
+
+    renderWithProviders(<WrappedScreen />);
+    expect(screen.getByText("share wrapped")).toBeTruthy();
+    expect(screen.getByText("books read")).toBeTruthy();
   });
 });
 

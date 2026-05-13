@@ -9,11 +9,17 @@ import { Text } from "../../ui/Text";
 import { tokens } from "../../ui/tokens";
 
 export interface PrivateProfileScreenProps {
+  onOpenNotifications?: () => void;
   onOpenSettings: () => void;
+  onOpenWrapped?: () => void;
 }
 
 /** Local-only profile/settings entry from Figma frame 4:691. */
-export function PrivateProfileScreen({ onOpenSettings }: PrivateProfileScreenProps): ReactElement {
+export function PrivateProfileScreen({
+  onOpenNotifications = noop,
+  onOpenSettings,
+  onOpenWrapped = noop
+}: PrivateProfileScreenProps): ReactElement {
   return (
     <Screen subtitle="private library, stored on this device" title={figmaProfile.handle}>
       <View style={styles.badge}>
@@ -30,7 +36,12 @@ export function PrivateProfileScreen({ onOpenSettings }: PrivateProfileScreenPro
 
       <Card style={styles.actions} variant="elevated">
         {figmaProfile.actions.map((action) => (
-          <View key={action.label} style={styles.actionRow}>
+          <Pressable
+            accessibilityRole="button"
+            key={action.label}
+            onPress={action.label === "reading wrapped" ? onOpenWrapped : onOpenSettings}
+            style={styles.actionRow}
+          >
             <View style={styles.actionCopy}>
               <Text variant="bodyStrong">{action.label}</Text>
               <Text tone="muted" variant="caption">
@@ -38,11 +49,17 @@ export function PrivateProfileScreen({ onOpenSettings }: PrivateProfileScreenPro
               </Text>
             </View>
             <Text tone="accent" variant="caption">
-              local
+              →
             </Text>
-          </View>
+          </Pressable>
         ))}
       </Card>
+
+      <Pressable accessibilityRole="button" onPress={onOpenNotifications} style={styles.settingsLink}>
+        <Text tone="accent" variant="bodyStrong">
+          open notifications
+        </Text>
+      </Pressable>
 
       <Card>
         <Text tone="muted" variant="eyebrow">
@@ -65,6 +82,8 @@ export function PrivateProfileScreen({ onOpenSettings }: PrivateProfileScreenPro
     </Screen>
   );
 }
+
+const noop = (): void => undefined;
 
 const styles = StyleSheet.create({
   actionCopy: {
