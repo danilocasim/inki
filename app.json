@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Inki",
+    "slug": "inki",
+    "version": "0.1.0",
+    "scheme": "inki",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "com.inki.app",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.inki.app",
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": ["expo-router", "expo-splash-screen"]
+  }
+}

@@ -1,0 +1,42 @@
+[  208409ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://www.figma.com/webpack-artifacts/assets/figma_app-a62e45fc7e3327f2.min.js.br:205
+[  208409ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://www.figma.com/webpack-artifacts/assets/figma_app-a62e45fc7e3327f2.min.js.br:205
+[  238888ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://www.figma.com/api/folders/303604469:0
+[  238906ms] T: XHR for "/api/folders/303604469" failed with status 401
+    at N (https://www.figma.com/webpack-artifacts/assets/7259-c6a3058fbe740b17.min.js.br:1421:11248)
+    at async Object.R [as get] (https://www.figma.com/webpack-artifacts/assets/7259-c6a3058fbe740b17.min.js.br:1421:11631)
+    at async https://www.figma.com/webpack-artifacts/assets/7259-c6a3058fbe740b17.min.js.br:1106:146632
+    at async g.validate (https://www.figma.com/webpack-artifacts/assets/7259-c6a3058fbe740b17.min.js.br:1401:5958)
+    at async h.fetchObject (https://www.figma.com/webpack-artifacts/assets/7259-c6a3058fbe740b17.min.js.br:344:213481)
+    at async f (https://www.figma.com/webpack-artifacts/assets/7259-c6a3058fbe740b17.min.js.br:344:192842)
+[  272514ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://www.figma.com/webpack-artifacts/assets/figma_app-a62e45fc7e3327f2.min.js.br:205
+[  272514ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://www.figma.com/webpack-artifacts/assets/figma_app-a62e45fc7e3327f2.min.js.br:205
+[  311804ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://www.figma.com/webpack-artifacts/assets/figma_app-a62e45fc7e3327f2.min.js.br:205
+[  311804ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://www.figma.com/webpack-artifacts/assets/figma_app-a62e45fc7e3327f2.min.js.br:205
+[  315640ms] [LOG] Running frontend commit d86534070ab6d9a35d2397442e3414fd20c889d2 @ https://www.figma.com/design/2js5xldlkB09Q3oQXtfN2n/Untitled?fuid=1566313915597014539:596
+[  316216ms] [WARNING] Statsig is not ready to log exposures, will retry in 1 seconds @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
+[  316417ms] [LOG] [import] git: d86534070ab6d9a35d2397442e3414fd20c889d2, stamp: 4B6DA0A24280E369 @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
+[  316576ms] [INFO] Autosave Changes not available or already claimed by another tab undefined @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
+[  316840ms] [INFO] [Fullscreen] Booting... (emscripten version 4.0.21) @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
+[  316862ms] [INFO] [GPU] graphicsAPI:"WebGPU", vendor:"Google Inc. (Apple)" renderer:"ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)" deviceArchitecture:"metal-3" deviceDescription:"" webGPUDevice:"" webGPUVendor:"apple" bindings:"emdawnwebgpu" @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
+[  316863ms] [LOG] [Fullscreen] Ready in 232.5ms @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
+[  316965ms] [INFO] [FullscreenApp] calling setEditorTheme and setting preference light @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
+[  316984ms] [INFO] [MultiplayerSession] connecting to wss://www.figma.com/api/multiplayer/2js5xldlkB09Q3oQXtfN2n?role=editor&tracking_session_id=zm1YuaILlZ5s4iNH&version=153&recentReload=0&file-load-streaming-compression&user-id=1566313915597014539&client_release=d86534070ab6d9a35d2397442e3414fd20c889d2 @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
+[  316984ms] [INFO] [FullscreenApp] calling setEditorTheme and setting preference light @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
+[  317521ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://www.figma.com/api/folders/303604469:0
+[  317565ms] T: XHR for "/api/folders/303604469" failed with status 403
+    at N (https://www.figma.com/webpack-artifacts/assets/7259-c6a3058fbe740b17.min.js.br:1421:11248)
+    at async Object.R [as get] (https://www.figma.com/webpack-artifacts/assets/7259-c6a3058fbe740b17.min.js.br:1421:11631)
+    at async https://www.figma.com/webpack-artifacts/assets/7259-c6a3058fbe740b17.min.js.br:1106:146632
+    at async g.validate (https://www.figma.com/webpack-artifacts/assets/7259-c6a3058fbe740b17.min.js.br:1401:5958)
+    at async h.fetchObject (https://www.figma.com/webpack-artifacts/assets/7259-c6a3058fbe740b17.min.js.br:344:213481)
+    at async f (https://www.figma.com/webpack-artifacts/assets/7259-c6a3058fbe740b17.min.js.br:344:192842)
+[  317576ms] [LOG] Loaded 206 scripts (11257185b), 206 from cache (11257185b) @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
+[  317713ms] [INFO] [MultiplayerSession] Joining file version 106 (initial load) @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
+[  317755ms] [LOG] Migration succeeded: context: fullscreen_migrate_SceneGraphManager, version: 106, duration: 0ms. @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
+[  318387ms] [WARNING] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently @ https://static.figma.com/fullscreen/8601e4c5c740d64ea61074da8e9575b0523cc793/fullscreen-wasm/compiled_wasm.js.br:1
+[  319251ms] [INFO] afterJoinEnd PageSyncing: Loaded incrementally {loaded_pages: 0:1} @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
+[  319291ms] [WARNING] Blocked aria-hidden on an element because its descendant retained focus. The focus must not be hidden from assistive technology users. Avoid using aria-hidden on a focused element or its ancestor. Consider using the inert attribute instead, which will also prevent focus. For more details, see the aria-hidden section of the WAI-ARIA specification at https://w3c.github.io/aria/#aria-hidden.
+Element with focus: <input.focus-target>
+Ancestor with aria-hidden: <input.focus-target> @ https://www.figma.com/design/2js5xldlkB09Q3oQXtfN2n/Untitled?node-id=0-1&p=f&t=XDDgzdlUfdc5FMeO-0:0
+[  319768ms] [INFO] [Sprigma] Sprig SDK is ready @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
+[  319800ms] [LOG] [Fullscreen] loadtime=4.86s maxmem=14307312 @ https://www.figma.com/webpack-artifacts/assets/vendor-core-1e44c283e4ec92dd.min.js.br:53
