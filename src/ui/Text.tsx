@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { StyleSheet, Text as NativeText, type TextProps } from "react-native";
 
-import { tokens, type TextVariant } from "./tokens";
+import { fontFamily, tokens, type TextVariant } from "./tokens";
 
 export type TextTone = "default" | "muted" | "accent" | "inverse" | "danger" | "button";
 
@@ -27,7 +27,8 @@ export function Text({
 
 const styles = StyleSheet.create({
   base: {
-    color: tokens.color.ink
+    color: tokens.color.ink,
+    fontFamily: fontFamily.regular
   }
 });
 

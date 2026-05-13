@@ -1,5 +1,14 @@
 import type { TextStyle, ViewStyle } from "react-native";
 
+export const fontFamily = {
+  regular: "IbarraRealNova_400Regular",
+  regularItalic: "IbarraRealNova_400Regular_Italic",
+  medium: "IbarraRealNova_500Medium",
+  semiBold: "IbarraRealNova_600SemiBold",
+  bold: "IbarraRealNova_700Bold",
+  boldItalic: "IbarraRealNova_700Bold_Italic"
+} as const;
+
 /** Screenshot-derived primitives for Inki's dark editorial mobile shell. */
 export const tokens = {
   color: {
@@ -42,15 +51,15 @@ export const tokens = {
     pill: 999
   },
   typography: {
-    screenTitle: { fontSize: 34, lineHeight: 40, fontWeight: "900", letterSpacing: 0 },
-    hero: { fontSize: 26, lineHeight: 32, fontWeight: "900", letterSpacing: 0 },
-    sectionTitle: { fontSize: 21, lineHeight: 27, fontWeight: "900", letterSpacing: 0 },
-    body: { fontSize: 16, lineHeight: 23, fontWeight: "500", letterSpacing: 0 },
-    bodyStrong: { fontSize: 16, lineHeight: 23, fontWeight: "800", letterSpacing: 0 },
-    caption: { fontSize: 13, lineHeight: 18, fontWeight: "700", letterSpacing: 0 },
-    eyebrow: { fontSize: 11, lineHeight: 15, fontWeight: "800", letterSpacing: 2 },
-    tab: { fontSize: 12, lineHeight: 16, fontWeight: "800", letterSpacing: 0 },
-    stat: { fontSize: 32, lineHeight: 38, fontWeight: "900", letterSpacing: 0 }
+    screenTitle: { fontFamily: fontFamily.bold, fontSize: 34, lineHeight: 40, fontWeight: "700", letterSpacing: 0 },
+    hero: { fontFamily: fontFamily.bold, fontSize: 26, lineHeight: 32, fontWeight: "700", letterSpacing: 0 },
+    sectionTitle: { fontFamily: fontFamily.bold, fontSize: 21, lineHeight: 27, fontWeight: "700", letterSpacing: 0 },
+    body: { fontFamily: fontFamily.regular, fontSize: 16, lineHeight: 23, fontWeight: "400", letterSpacing: 0 },
+    bodyStrong: { fontFamily: fontFamily.bold, fontSize: 16, lineHeight: 23, fontWeight: "700", letterSpacing: 0 },
+    caption: { fontFamily: fontFamily.semiBold, fontSize: 13, lineHeight: 18, fontWeight: "600", letterSpacing: 0 },
+    eyebrow: { fontFamily: fontFamily.bold, fontSize: 11, lineHeight: 15, fontWeight: "700", letterSpacing: 2 },
+    tab: { fontFamily: fontFamily.semiBold, fontSize: 12, lineHeight: 16, fontWeight: "600", letterSpacing: 0 },
+    stat: { fontFamily: fontFamily.bold, fontSize: 32, lineHeight: 38, fontWeight: "700", letterSpacing: 0 }
   } satisfies Record<string, TextStyle>,
   shadow: {
     card: {

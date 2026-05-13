@@ -15,6 +15,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@expo-google-fonts/ibarra-real-nova": "^0.4.2",
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
@@ -23,6 +24,7 @@
     "expo-constants": "~18.0.13",
     "expo-document-picker": "~14.0.8",
     "expo-file-system": "~19.0.22",
+    "expo-font": "^55.0.7",
     "expo-image-picker": "~17.0.11",
     "expo-linking": "~8.0.11",
     "expo-media-library": "~18.2.1",
