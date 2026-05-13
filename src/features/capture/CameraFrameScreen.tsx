@@ -21,7 +21,7 @@ export function CameraFrameScreen({
   title
 }: CameraFrameScreenProps): ReactElement {
   return (
-    <Screen title={title}>
+    <Screen contentStyle={styles.content} title={title}>
       <Card style={styles.camera} variant="ink">
         <View style={styles.frame}>
           <Text tone="inverse" variant="eyebrow">ALIGN</Text>
@@ -38,12 +38,17 @@ export function CameraFrameScreen({
 const styles = StyleSheet.create({
   camera: {
     alignItems: "center",
-    minHeight: 520,
+    backgroundColor: tokens.color.black,
+    minHeight: 650,
     justifyContent: "center"
+  },
+  content: {
+    paddingHorizontal: tokens.space[3],
+    paddingTop: tokens.space[6]
   },
   frame: {
     alignItems: "center",
-    borderColor: tokens.color.surface,
+    borderColor: tokens.color.accent,
     borderRadius: tokens.radius.lg,
     borderWidth: 2,
     gap: tokens.space[2],

@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import { Tabs } from "expo-router";
+import { Feather } from "@expo/vector-icons";
 
 import { tokens } from "../../src/ui/tokens";
 
@@ -9,7 +10,7 @@ export default function TabsLayout(): ReactElement {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: tokens.color.ink,
+        tabBarActiveTintColor: tokens.color.accent,
         tabBarInactiveTintColor: tokens.color.muted,
         tabBarLabelStyle: {
           fontSize: 12,
@@ -17,7 +18,7 @@ export default function TabsLayout(): ReactElement {
           textTransform: "lowercase"
         },
         tabBarStyle: {
-          backgroundColor: tokens.color.surface,
+          backgroundColor: tokens.color.canvas,
           borderTopColor: tokens.color.border,
           height: 78,
           paddingBottom: 18,
@@ -25,9 +26,30 @@ export default function TabsLayout(): ReactElement {
         }
       }}
     >
-      <Tabs.Screen name="index" options={{ tabBarLabel: "home", title: "home" }} />
-      <Tabs.Screen name="shelves" options={{ tabBarLabel: "shelf", title: "shelf" }} />
-      <Tabs.Screen name="profile" options={{ tabBarLabel: "profile", title: "profile" }} />
+      <Tabs.Screen
+        name="index"
+        options={{
+          tabBarIcon: ({ color, size }) => <Feather color={color} name="home" size={size} />,
+          tabBarLabel: "home",
+          title: "home"
+        }}
+      />
+      <Tabs.Screen
+        name="shelves"
+        options={{
+          tabBarIcon: ({ color, size }) => <Feather color={color} name="book-open" size={size} />,
+          tabBarLabel: "shelf",
+          title: "shelf"
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          tabBarIcon: ({ color, size }) => <Feather color={color} name="user" size={size} />,
+          tabBarLabel: "profile",
+          title: "profile"
+        }}
+      />
     </Tabs>
   );
 }

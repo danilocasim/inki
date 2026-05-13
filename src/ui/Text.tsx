@@ -3,7 +3,7 @@ import { StyleSheet, Text as NativeText, type TextProps } from "react-native";
 
 import { tokens, type TextVariant } from "./tokens";
 
-export type TextTone = "default" | "muted" | "accent" | "inverse" | "danger";
+export type TextTone = "default" | "muted" | "accent" | "inverse" | "danger" | "button";
 
 export interface InkiTextProps extends TextProps {
   tone?: TextTone;
@@ -39,12 +39,15 @@ const toneStyles = StyleSheet.create({
     color: tokens.color.muted
   },
   accent: {
-    color: tokens.color.accentDark
+    color: tokens.color.accent
   },
   inverse: {
-    color: tokens.color.surface
+    color: tokens.color.ink
   },
   danger: {
     color: tokens.color.danger
+  },
+  button: {
+    color: tokens.color.black
   }
 });

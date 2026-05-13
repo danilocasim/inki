@@ -1,22 +1,24 @@
 import type { TextStyle, ViewStyle } from "react-native";
 
-/** Figma-derived primitive tokens for the first static Inki mobile shell. */
+/** Screenshot-derived primitives for Inki's dark editorial mobile shell. */
 export const tokens = {
   color: {
-    canvas: "#F4EBDD",
-    surface: "#FFF9F0",
-    surfaceMuted: "#EFE1CD",
-    ink: "#201812",
-    inkSoft: "#4A3A2F",
-    muted: "#7E6F62",
-    border: "#DECBB2",
-    accent: "#B66A3C",
-    accentDark: "#7D3F26",
-    leaf: "#65785C",
-    moss: "#2F3B2E",
-    blush: "#D69B86",
-    gold: "#C69A45",
-    danger: "#9C3F36",
+    canvas: "#1B1B1B",
+    surface: "#252525",
+    surfaceMuted: "#111111",
+    surfaceRaised: "#2A2A2A",
+    ink: "#F1EEE8",
+    inkSoft: "#BEB8B0",
+    muted: "#777675",
+    border: "#333333",
+    accent: "#9EC7FA",
+    accentDark: "#78A8E8",
+    leaf: "#365F50",
+    moss: "#263B29",
+    blush: "#9B3F41",
+    gold: "#C99668",
+    danger: "#D24B43",
+    black: "#080808",
     white: "#FFFFFF"
   },
   space: {
@@ -32,31 +34,31 @@ export const tokens = {
     12: 48
   },
   radius: {
-    xs: 8,
-    sm: 12,
-    md: 18,
-    lg: 26,
-    xl: 34,
+    xs: 6,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 28,
     pill: 999
   },
   typography: {
-    screenTitle: { fontSize: 34, lineHeight: 40, fontWeight: "800" },
-    hero: { fontSize: 28, lineHeight: 34, fontWeight: "800" },
-    sectionTitle: { fontSize: 20, lineHeight: 26, fontWeight: "800" },
-    body: { fontSize: 16, lineHeight: 23, fontWeight: "500" },
-    bodyStrong: { fontSize: 16, lineHeight: 23, fontWeight: "700" },
-    caption: { fontSize: 13, lineHeight: 18, fontWeight: "600" },
-    eyebrow: { fontSize: 11, lineHeight: 15, fontWeight: "800", letterSpacing: 1.1 },
-    tab: { fontSize: 12, lineHeight: 16, fontWeight: "800" },
-    stat: { fontSize: 24, lineHeight: 30, fontWeight: "900" }
+    screenTitle: { fontSize: 34, lineHeight: 40, fontWeight: "900", letterSpacing: 0 },
+    hero: { fontSize: 26, lineHeight: 32, fontWeight: "900", letterSpacing: 0 },
+    sectionTitle: { fontSize: 21, lineHeight: 27, fontWeight: "900", letterSpacing: 0 },
+    body: { fontSize: 16, lineHeight: 23, fontWeight: "500", letterSpacing: 0 },
+    bodyStrong: { fontSize: 16, lineHeight: 23, fontWeight: "800", letterSpacing: 0 },
+    caption: { fontSize: 13, lineHeight: 18, fontWeight: "700", letterSpacing: 0 },
+    eyebrow: { fontSize: 11, lineHeight: 15, fontWeight: "800", letterSpacing: 2 },
+    tab: { fontSize: 12, lineHeight: 16, fontWeight: "800", letterSpacing: 0 },
+    stat: { fontSize: 32, lineHeight: 38, fontWeight: "900", letterSpacing: 0 }
   } satisfies Record<string, TextStyle>,
   shadow: {
     card: {
-      shadowColor: "#201812",
+      shadowColor: "#000000",
       shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.12,
-      shadowRadius: 20,
-      elevation: 4
+      shadowOpacity: 0.18,
+      shadowRadius: 24,
+      elevation: 5
     } satisfies ViewStyle
   }
 } as const;

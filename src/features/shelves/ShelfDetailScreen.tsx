@@ -21,6 +21,7 @@ import { tokens } from "../../ui/tokens";
 
 export interface ShelfDetailScreenProps {
   onOpenBook?: (bookId: string) => void;
+  onShareShelf?: () => void;
   onViewChange: (view: ShelfView) => void;
   shelf?: Shelf | undefined;
   shelfId: string;
@@ -30,6 +31,7 @@ export interface ShelfDetailScreenProps {
 /** Static shelf detail route that switches among grid, list, and spine views. */
 export function ShelfDetailScreen({
   onOpenBook = noopOpenBook,
+  onShareShelf = noop,
   onViewChange,
   shelf: providedShelf,
   shelfId,
@@ -76,7 +78,7 @@ export function ShelfDetailScreen({
     <Screen subtitle={shelf.subtitle} title={shelf.title}>
       <SegmentedControl onValueChange={onViewChange} options={shelfViews} value={view} />
       {renderShelfView(view, books, onOpenBook)}
-      <Button label="share shelf" onPress={noop} />
+      <Button label="share shelf" onPress={onShareShelf} />
     </Screen>
   );
 }

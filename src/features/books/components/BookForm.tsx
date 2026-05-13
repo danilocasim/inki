@@ -37,9 +37,16 @@ export function BookForm({
 
   return (
     <Card style={styles.card} variant="elevated">
+      <Text variant="hero">add a book</Text>
       <Text tone="muted" variant="eyebrow">
         step 1
       </Text>
+      <View style={styles.stepLine}>
+        <View style={styles.stepLineActive} />
+        <View style={styles.stepLineRest} />
+        <View style={styles.stepLineRest} />
+        <View style={styles.stepLineRest} />
+      </View>
       <Field label="TITLE" onChangeText={setTitle} value={title} />
       <Field label="AUTHOR" onChangeText={setAuthor} value={author} />
       <Field label="GENRE" onChangeText={setGenre} value={genre} />
@@ -105,7 +112,7 @@ const styles = StyleSheet.create({
     gap: tokens.space[2]
   },
   input: {
-    backgroundColor: tokens.color.surfaceMuted,
+    backgroundColor: tokens.color.black,
     borderColor: tokens.color.border,
     borderRadius: tokens.radius.md,
     borderWidth: 1,
@@ -114,5 +121,19 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     minHeight: 52,
     paddingHorizontal: tokens.space[4]
+  },
+  stepLine: {
+    flexDirection: "row",
+    gap: tokens.space[1]
+  },
+  stepLineActive: {
+    backgroundColor: tokens.color.accent,
+    flex: 1,
+    height: 2
+  },
+  stepLineRest: {
+    backgroundColor: tokens.color.border,
+    flex: 1,
+    height: 2
   }
 });

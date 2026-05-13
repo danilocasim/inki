@@ -19,7 +19,7 @@ export interface ScreenProps {
   title?: string;
 }
 
-/** Provides consistent safe-area, keyboard, and parchment canvas treatment. */
+/** Provides consistent safe-area, keyboard, and dark canvas treatment. */
 export function Screen({ children, contentStyle, subtitle, title }: ScreenProps): ReactElement {
   return (
     <SafeAreaView edges={["top"]} style={styles.safeArea}>
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     gap: tokens.space[4],
     paddingBottom: tokens.space[10],
     paddingHorizontal: tokens.space[5],
-    paddingTop: tokens.space[4]
+    paddingTop: tokens.space[3]
   },
   keyboard: {
     flex: 1

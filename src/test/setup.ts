@@ -12,6 +12,15 @@ type SafeAreaViewProps = SafeAreaProviderProps & {
 
 jest.mock("react-native-reanimated", () => jest.requireActual("react-native-reanimated/mock"));
 
+jest.mock("@expo/vector-icons", () => {
+  const React = jest.requireActual<typeof import("react")>("react");
+  const { Text } = jest.requireActual<typeof import("react-native")>("react-native");
+
+  return {
+    Feather: ({ name }: { name: string }) => React.createElement(Text, null, name)
+  };
+});
+
 jest.mock("react-native-safe-area-context", () => {
   const React = jest.requireActual<typeof import("react")>("react");
   const { View } = jest.requireActual<typeof import("react-native")>("react-native");

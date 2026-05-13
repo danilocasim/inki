@@ -14,10 +14,10 @@ export interface StatTileProps {
 export function StatTile({ detail, label, value }: StatTileProps): ReactElement {
   return (
     <View style={styles.container}>
-      <Text tone="muted" variant="eyebrow">
+      <Text variant="stat">{value}</Text>
+      <Text tone="muted" variant="bodyStrong">
         {label}
       </Text>
-      <Text variant="stat">{value}</Text>
       {detail ? <Text tone="muted" variant="caption">{detail}</Text> : null}
     </View>
   );
@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flex: 1,
     gap: tokens.space[1],
+    minHeight: 100,
     minWidth: 130,
     padding: tokens.space[4]
   }

@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSQLiteContext } from "expo-sqlite";
 
-import { listNotifications } from "../repositories/notifications-log-repository";
+import { listNotifications, markNotificationRead } from "../repositories/notifications-log-repository";
 import type { NotificationLogItem } from "../types";
 
 export interface NotificationsState {
   items: NotificationLogItem[];
   loading: boolean;
+  markRead: (id: string) => Promise<void>;
   reload: () => Promise<void>;
 }
 
@@ -25,9 +26,17 @@ export function useNotifications(): NotificationsState {
     }
   }, [db]);
 
+  const markRead = useCallback(
+    async (id: string): Promise<void> => {
+      await markNotificationRead(db, id);
+      await reload();
+    },
+    [db, reload]
+  );
+
   useEffect(() => {
     void reload();
   }, [reload]);
 
-  return { items, loading, reload };
+  return { items, loading, markRead, reload };
 }

@@ -45,7 +45,7 @@ export function BarcodeScanScreen({
   };
 
   return (
-    <Screen title="scan barcode">
+    <Screen contentStyle={styles.content} title="scan barcode">
       <PermissionGate
         blockedMessage="Camera access is blocked. Enable it in system settings, or add the book manually."
         deniedMessage="Inki uses the camera only to scan local ISBN barcodes. Manual entry works offline."
@@ -84,13 +84,18 @@ export function BarcodeScanScreen({
 const styles = StyleSheet.create({
   camera: {
     alignItems: "center",
-    minHeight: 520,
+    backgroundColor: tokens.color.black,
+    minHeight: 650,
     justifyContent: "center",
     overflow: "hidden"
   },
+  content: {
+    paddingHorizontal: tokens.space[3],
+    paddingTop: tokens.space[6]
+  },
   frame: {
     alignItems: "center",
-    borderColor: tokens.color.surface,
+    borderColor: tokens.color.accent,
     borderRadius: tokens.radius.lg,
     borderWidth: 2,
     gap: tokens.space[2],

@@ -1,7 +1,7 @@
 import type { SQLiteDatabase } from "expo-sqlite";
 
 import { seedDevelopmentDataAsync } from "./dev-seed";
-import { schemaV1Sql } from "./schema.sql";
+import { schemaV1Sql, schemaV2Sql } from "./schema.sql";
 import type { DatabaseWriter, UserVersionRow } from "./types";
 
 export const DATABASE_NAME = "inki.db";
@@ -26,6 +26,13 @@ export async function migrateDatabaseAsync(db: DatabaseWriter): Promise<void> {
     await db.withExclusiveTransactionAsync(async (txn) => {
       await txn.execAsync(schemaV1Sql);
       await txn.execAsync("PRAGMA user_version = 1;");
+    });
+  }
+
+  if (userVersion < 2) {
+    await db.withExclusiveTransactionAsync(async (txn) => {
+      await txn.execAsync(schemaV2Sql);
+      await txn.execAsync("PRAGMA user_version = 2;");
     });
   }
 }

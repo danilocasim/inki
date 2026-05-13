@@ -13,6 +13,11 @@ export interface Shelf {
   title: string;
 }
 
+export interface CreateShelfInput {
+  name: string;
+  description?: string | undefined;
+}
+
 export interface ShelfRow {
   accent: string;
   book_count: number;

@@ -122,3 +122,29 @@ CREATE INDEX IF NOT EXISTS idx_shelf_books_shelf_sort ON shelf_books(shelf_id, s
 CREATE INDEX IF NOT EXISTS idx_quotes_book_created_at ON quotes(book_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_notifications_log_type_sent_at ON notifications_log(type, sent_at);
 `;
+
+export const schemaV2Sql = `
+CREATE TABLE IF NOT EXISTS book_notes (
+  id TEXT PRIMARY KEY NOT NULL,
+  book_id TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+  title TEXT,
+  body TEXT NOT NULL,
+  page INTEGER CHECK (page IS NULL OR page >= 0),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS bookmarks (
+  id TEXT PRIMARY KEY NOT NULL,
+  book_id TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+  page INTEGER NOT NULL CHECK (page >= 0),
+  label TEXT,
+  note TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE (book_id, page)
+);
+
+CREATE INDEX IF NOT EXISTS idx_book_notes_book_updated_at ON book_notes(book_id, updated_at);
+CREATE INDEX IF NOT EXISTS idx_bookmarks_book_page ON bookmarks(book_id, page);
+`;

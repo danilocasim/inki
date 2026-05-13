@@ -48,14 +48,14 @@ export function Button({
 }
 
 const labelTones: Record<ButtonVariant, TextTone> = {
-  primary: "inverse",
+  primary: "button",
   secondary: "accent",
   ghost: "default"
 };
 
 const indicatorColors: Record<ButtonVariant, string> = {
-  primary: tokens.color.surface,
-  secondary: tokens.color.accentDark,
+  primary: tokens.color.black,
+  secondary: tokens.color.accent,
   ghost: tokens.color.ink
 };
 
@@ -84,10 +84,10 @@ const styles = StyleSheet.create({
 
 const variantStyles = StyleSheet.create({
   primary: {
-    backgroundColor: tokens.color.ink
+    backgroundColor: tokens.color.accent
   },
   secondary: {
-    backgroundColor: tokens.color.surface,
+    backgroundColor: tokens.color.surfaceMuted,
     borderColor: tokens.color.border,
     borderWidth: 1
   },

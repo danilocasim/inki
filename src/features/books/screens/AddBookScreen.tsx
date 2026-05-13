@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { StyleSheet } from "react-native";
 
 import { BookForm } from "../components/BookForm";
 import { useSaveBook } from "../hooks/use-save-book";
@@ -8,6 +9,7 @@ import { Button } from "../../../ui/Button";
 import { Card } from "../../../ui/Card";
 import { Screen } from "../../../ui/Screen";
 import { Text } from "../../../ui/Text";
+import { tokens } from "../../../ui/tokens";
 
 export function AddBookScreen(): ReactElement {
   const router = useRouter();
@@ -24,15 +26,15 @@ export function AddBookScreen(): ReactElement {
   };
 
   return (
-    <Screen subtitle="add a book" title="inki">
+    <Screen contentStyle={styles.content}>
       <BookForm
         error={error}
         initialValue={initialValue}
         loading={loading}
         onSubmit={(input) => void handleSubmit(input)}
       />
-      <Card>
-        <Text variant="sectionTitle">or scan a barcode</Text>
+      <Card style={styles.scanCard} variant="ink">
+        <Text tone="muted" variant="caption">or scan a barcode</Text>
         <Text tone="muted">point camera at back cover</Text>
         <Text tone="muted">auto-fill from Open Library</Text>
         <Button label="scan barcode" onPress={() => router.push("/capture/barcode")} variant="secondary" />
@@ -111,3 +113,13 @@ const readStatusParam = (value: string | string[] | undefined): BookStatus | und
 
   return undefined;
 };
+
+const styles = StyleSheet.create({
+  content: {
+    gap: tokens.space[3],
+    paddingTop: tokens.space[8]
+  },
+  scanCard: {
+    gap: tokens.space[3]
+  }
+});

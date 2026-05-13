@@ -24,7 +24,7 @@ export default function RootLayout(): ReactElement {
           <Stack.Screen name="capture/page" />
           <Stack.Screen name="share/[cardType]" />
         </Stack>
-        <StatusBar style="dark" />
+        <StatusBar style="light" />
       </DatabaseProvider>
     </SafeAreaProvider>
   );

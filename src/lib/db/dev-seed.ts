@@ -67,6 +67,7 @@ export async function seedDevelopmentDataAsync(db: DatabaseWriter): Promise<void
 
     await seedSessionsAsync(txn, now);
     await seedQuotesAsync(txn, now);
+    await seedAnnotationsAsync(txn, now);
     await seedSettingsAsync(txn, now);
     await seedNotificationsAsync(txn, now);
   });
@@ -106,10 +107,33 @@ async function seedQuotesAsync(txn: DatabaseWriter, now: string): Promise<void> 
   );
 }
 
+async function seedAnnotationsAsync(txn: DatabaseWriter, now: string): Promise<void> {
+  await txn.runAsync(
+    `INSERT INTO book_notes (id, book_id, title, body, page, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?);`,
+    [
+      "note-piranesi-house",
+      "piranesi",
+      "House as comfort",
+      "This is where the book turns from puzzle box into something tender.",
+      112,
+      now,
+      now
+    ]
+  );
+
+  await txn.runAsync(
+    `INSERT INTO bookmarks (id, book_id, page, label, note, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?);`,
+    ["bookmark-piranesi-112", "piranesi", 112, "kindness line", null, now, now]
+  );
+}
+
 async function seedSettingsAsync(txn: DatabaseWriter, now: string): Promise<void> {
   const settings = [
     ["dailyShareStreakEnabled", "true"],
     ["dailyShareStreakTime", "21:00"],
+    ["iCloudSyncEnabled", "false"],
     ["readReminderEnabled", "false"],
     ["shelfView.midnight-reads", "grid"]
   ] as const;

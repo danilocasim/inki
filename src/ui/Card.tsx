@@ -11,7 +11,7 @@ export interface CardProps {
   variant?: CardVariant;
 }
 
-/** Rounded container primitive that matches the soft card language in Figma. */
+/** Rounded container primitive matching the dark screenshot card language. */
 export function Card({ children, style, variant = "surface" }: CardProps): ReactElement {
   return <View style={[styles.base, variantStyles[variant], style]}>{children}</View>;
 }
@@ -26,10 +26,14 @@ const styles = StyleSheet.create({
 const variantStyles = StyleSheet.create({
   elevated: {
     backgroundColor: tokens.color.surface,
+    borderColor: tokens.color.border,
+    borderWidth: 1,
     ...tokens.shadow.card
   },
   ink: {
-    backgroundColor: tokens.color.ink
+    backgroundColor: tokens.color.surfaceMuted,
+    borderColor: tokens.color.border,
+    borderWidth: 1
   },
   surface: {
     backgroundColor: tokens.color.surface,

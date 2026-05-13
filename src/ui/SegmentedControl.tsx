@@ -34,7 +34,7 @@ export function SegmentedControl<Value extends string>({
             onPress={() => onValueChange(option.value)}
             style={[styles.option, selected ? styles.optionSelected : undefined]}
           >
-            <Text tone={selected ? "inverse" : "muted"} variant="tab">
+            <Text tone={selected ? "button" : "muted"} variant="tab">
               {option.label}
             </Text>
           </Pressable>
@@ -46,21 +46,22 @@ export function SegmentedControl<Value extends string>({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: tokens.color.surfaceMuted,
-    borderRadius: tokens.radius.pill,
+    backgroundColor: "transparent",
     flexDirection: "row",
-    gap: tokens.space[1],
-    padding: tokens.space[1]
+    flexWrap: "wrap",
+    gap: tokens.space[2]
   },
   option: {
     alignItems: "center",
+    borderColor: tokens.color.border,
+    borderWidth: 1,
     borderRadius: tokens.radius.pill,
-    flex: 1,
     justifyContent: "center",
-    minHeight: 44,
-    paddingHorizontal: tokens.space[3]
+    minHeight: 40,
+    paddingHorizontal: tokens.space[4]
   },
   optionSelected: {
-    backgroundColor: tokens.color.ink
+    backgroundColor: tokens.color.accent,
+    borderColor: tokens.color.accent
   }
 });

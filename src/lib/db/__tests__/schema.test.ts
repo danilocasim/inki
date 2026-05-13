@@ -1,4 +1,4 @@
-import { schemaV1Sql } from "../schema.sql";
+import { schemaV1Sql, schemaV2Sql } from "../schema.sql";
 
 describe("local SQLite schema", () => {
   it("contains the offline-first tables and indexes", () => {
@@ -7,10 +7,15 @@ describe("local SQLite schema", () => {
     expect(schemaV1Sql).toContain("CREATE TABLE IF NOT EXISTS shelves");
     expect(schemaV1Sql).toContain("CREATE TABLE IF NOT EXISTS notifications_log");
     expect(schemaV1Sql).toContain("CREATE INDEX IF NOT EXISTS idx_books_status_updated_at");
+    expect(schemaV2Sql).toContain("CREATE TABLE IF NOT EXISTS book_notes");
+    expect(schemaV2Sql).toContain("CREATE TABLE IF NOT EXISTS bookmarks");
+    expect(schemaV2Sql).toContain("CREATE INDEX IF NOT EXISTS idx_bookmarks_book_page");
   });
 
   it("does not include destructive reset SQL", () => {
-    expect(schemaV1Sql.toLowerCase()).not.toContain("drop table");
-    expect(schemaV1Sql.toLowerCase()).not.toContain("truncate");
+    const fullSchema = `${schemaV1Sql}\n${schemaV2Sql}`.toLowerCase();
+
+    expect(fullSchema).not.toContain("drop table");
+    expect(fullSchema).not.toContain("truncate");
   });
 });
