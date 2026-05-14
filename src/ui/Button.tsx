@@ -20,7 +20,7 @@ export function Button({
   label,
   loading = false,
   onPress,
-  variant = "primary"
+  variant = "primary",
 }: ButtonProps): ReactElement {
   const isDisabled = disabled || loading;
 
@@ -34,12 +34,12 @@ export function Button({
         styles.base,
         variantStyles[variant],
         pressed ? styles.pressed : undefined,
-        isDisabled ? styles.disabled : undefined
+        isDisabled ? styles.disabled : undefined,
       ]}
     >
       <View style={styles.content}>
         {loading ? <ActivityIndicator color={indicatorColors[variant]} /> : null}
-        <Text tone={labelTones[variant]} variant="bodyStrong">
+        <Text numberOfLines={1} tone={labelTones[variant]} variant="bodyStrong">
           {label}
         </Text>
       </View>
@@ -50,13 +50,13 @@ export function Button({
 const labelTones: Record<ButtonVariant, TextTone> = {
   primary: "button",
   secondary: "accent",
-  ghost: "default"
+  ghost: "default",
 };
 
 const indicatorColors: Record<ButtonVariant, string> = {
   primary: tokens.color.black,
   secondary: tokens.color.accent,
-  ghost: tokens.color.ink
+  ghost: tokens.color.ink,
 };
 
 const styles = StyleSheet.create({
@@ -65,33 +65,34 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.pill,
     justifyContent: "center",
     minHeight: 48,
-    paddingHorizontal: tokens.space[5]
+    minWidth: 116,
+    paddingHorizontal: tokens.space[5],
   },
   content: {
     alignItems: "center",
     flexDirection: "row",
     gap: tokens.space[2],
-    justifyContent: "center"
+    justifyContent: "center",
   },
   disabled: {
-    opacity: 0.45
+    opacity: 0.45,
   },
   pressed: {
     opacity: 0.78,
-    transform: [{ scale: 0.99 }]
-  }
+    transform: [{ scale: 0.99 }],
+  },
 });
 
 const variantStyles = StyleSheet.create({
   primary: {
-    backgroundColor: tokens.color.accent
+    backgroundColor: tokens.color.accent,
   },
   secondary: {
     backgroundColor: tokens.color.surfaceMuted,
     borderColor: tokens.color.border,
-    borderWidth: 1
+    borderWidth: 1,
   },
   ghost: {
-    backgroundColor: "transparent"
-  }
+    backgroundColor: "transparent",
+  },
 });

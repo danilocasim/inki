@@ -18,6 +18,12 @@ export interface CreateShelfInput {
   description?: string | undefined;
 }
 
+export interface UpdateShelfInput {
+  accent?: string | undefined;
+  description?: string | undefined;
+  name: string;
+}
+
 export interface ShelfRow {
   accent: string;
   book_count: number;
@@ -37,5 +43,5 @@ export const mapShelfRow = (row: ShelfRow): Shelf => ({
   id: row.id,
   kind: row.kind,
   subtitle: row.description ?? "private shelf",
-  title: row.name
+  title: row.name,
 });

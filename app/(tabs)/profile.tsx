@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 
 import { shareLibraryExportAsync } from "../../src/features/import-export";
+import { useProfile } from "../../src/features/profile/hooks/use-profile";
 import { PrivateProfileScreen } from "../../src/features/profile/PrivateProfileScreen";
 
 export default function ProfileRoute(): ReactElement {
@@ -11,6 +12,7 @@ export default function ProfileRoute(): ReactElement {
   const router = useRouter();
   const [exportingLibrary, setExportingLibrary] = useState(false);
   const [message, setMessage] = useState<string | undefined>();
+  const { error: profileError, profile, saveProfile, saving } = useProfile();
 
   const handleExportLibrary = async (): Promise<void> => {
     setExportingLibrary(true);
@@ -39,6 +41,10 @@ export default function ProfileRoute(): ReactElement {
       onOpenWrapped={() =>
         router.push({ pathname: "/share/[cardType]", params: { cardType: "wrapped" } })
       }
+      onSaveProfile={saveProfile}
+      profile={profile}
+      profileError={profileError}
+      savingProfile={saving}
     />
   );
 }

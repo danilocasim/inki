@@ -58,6 +58,8 @@ export interface CreateBookInput {
   totalPages?: number | undefined;
 }
 
+export type UpdateBookInput = CreateBookInput;
+
 export interface UpdateBookProgressInput {
   bookId: string;
   currentPage: number;
@@ -68,9 +70,10 @@ export interface UpdateBookProgressInput {
 }
 
 export const mapBookRow = (row: BookRow): Book => {
-  const progress = row.total_pages === null || row.total_pages === 0
-    ? undefined
-    : Math.min(100, Math.round((row.current_page / row.total_pages) * 100));
+  const progress =
+    row.total_pages === null || row.total_pages === 0
+      ? undefined
+      : Math.min(100, Math.round((row.current_page / row.total_pages) * 100));
 
   return {
     author: row.author,
@@ -88,6 +91,6 @@ export const mapBookRow = (row: BookRow): Book => {
     status: row.status,
     title: row.title,
     totalPages: row.total_pages ?? undefined,
-    year: new Date(row.created_at).getFullYear().toString()
+    year: new Date(row.created_at).getFullYear().toString(),
   };
 };

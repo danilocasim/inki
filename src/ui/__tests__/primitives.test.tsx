@@ -17,10 +17,16 @@ describe("ui primitives", () => {
   it("calls button actions", () => {
     let presses = 0;
 
-    renderWithProviders(<Button label="Add Book" onPress={() => presses += 1} />);
+    renderWithProviders(<Button label="Add Book" onPress={() => (presses += 1)} />);
     fireEvent.press(screen.getByRole("button", { name: "Add Book" }));
 
     expect(presses).toBe(1);
+  });
+
+  it("keeps button labels on one line", () => {
+    renderWithProviders(<Button label="Add Book" onPress={jest.fn()} />);
+
+    expect(screen.getByText("Add Book").props.numberOfLines).toBe(1);
   });
 
   it("changes segmented control state", () => {
@@ -34,10 +40,10 @@ describe("ui primitives", () => {
         options={[
           { label: "grid", value: "grid" },
           { label: "list", value: "list" },
-          { label: "spine", value: "spine" }
+          { label: "spine", value: "spine" },
         ]}
         value="grid"
-      />
+      />,
     );
 
     fireEvent.press(screen.getByText("spine"));
@@ -63,7 +69,7 @@ describe("ui primitives", () => {
           recovered = true;
         }}
         title="Inki hit a local error"
-      />
+      />,
     );
 
     fireEvent.press(screen.getByText("Try again"));

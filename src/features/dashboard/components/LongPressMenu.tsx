@@ -32,6 +32,7 @@ export interface LongPressMenuProps {
   onShare: () => void;
   onShelf: () => void;
   reduceMotion?: boolean;
+  screenHeight: number;
   screenWidth: number;
   tileRect: LayoutRectangle;
 }
@@ -43,6 +44,12 @@ const FADE_IN: WithTimingConfig = { duration: 200 };
 const FADE_OUT: WithTimingConfig = { duration: 150 };
 const BTN_DIAMETER = 56;
 const EDGE_PADDING = 16;
+const ACTION_GAP = 16;
+const ACTION_ITEM_WIDTH = 72;
+const ACTION_RAIL_WIDTH = ACTION_ITEM_WIDTH * 3 + ACTION_GAP * 2;
+const LABEL_HEIGHT = 18;
+const ACTION_RAIL_HEIGHT = BTN_DIAMETER + LABEL_HEIGHT + 8;
+const ACTION_TILE_GAP = 18;
 
 export function LongPressMenu({
   book,
@@ -51,6 +58,7 @@ export function LongPressMenu({
   onShare,
   onShelf,
   reduceMotion: reduceMotionProp,
+  screenHeight,
   screenWidth,
   tileRect,
 }: LongPressMenuProps): ReactElement {
@@ -114,9 +122,9 @@ export function LongPressMenu({
     }, 180);
   };
 
-  const positions = useMemo(
-    () => computeActionPositions(tileRect, screenWidth),
-    [tileRect, screenWidth],
+  const actionLayout = useMemo(
+    () => computeActionLayout(tileRect, screenWidth, screenHeight),
+    [screenHeight, screenWidth, tileRect],
   );
 
   const overlayStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
@@ -172,42 +180,54 @@ export function LongPressMenu({
               style={StyleSheet.absoluteFill}
             />
           ) : (
-            <Text numberOfLines={2} tone="inverse" variant="caption">
-              {book.title}
-            </Text>
+            <>
+              <Text numberOfLines={2} tone="inverse" variant="caption">
+                {book.title}
+              </Text>
+              <Text numberOfLines={2} style={styles.tileAuthor} tone="inverse" variant="eyebrow">
+                {book.author}
+              </Text>
+            </>
           )}
         </Pressable>
       </Animated.View>
 
-      <ActionButton
-        accessibilityLabel="Share book"
-        animatedStyle={shareStyle}
-        icon="share-2"
-        innerRef={shareRef}
-        label="Share"
-        left={positions.share.x}
-        onPress={() => dismiss(onShare)}
-        top={positions.share.y}
-      />
-      <ActionButton
-        accessibilityLabel={book.isPinned ? "Unpin book" : "Pin book"}
-        active={book.isPinned}
-        animatedStyle={pinStyle}
-        icon="map-pin"
-        label={book.isPinned ? "Unpin" : "Pin"}
-        left={positions.pin.x}
-        onPress={() => dismiss(onPin)}
-        top={positions.pin.y}
-      />
-      <ActionButton
-        accessibilityLabel="Add to shelf"
-        animatedStyle={shelfStyle}
-        icon="layers"
-        label="Shelf"
-        left={positions.shelf.x}
-        onPress={() => dismiss(onShelf)}
-        top={positions.shelf.y}
-      />
+      <Animated.View
+        pointerEvents="box-none"
+        style={[
+          styles.actionRail,
+          {
+            height: actionLayout.rail.height,
+            left: actionLayout.rail.x,
+            top: actionLayout.rail.y,
+            width: actionLayout.rail.width,
+          },
+        ]}
+      >
+        <ActionButton
+          accessibilityLabel={book.isPinned ? "Unpin book" : "Pin book"}
+          active={book.isPinned}
+          animatedStyle={pinStyle}
+          icon="map-pin"
+          label={book.isPinned ? "Unpin" : "Pin"}
+          onPress={() => dismiss(onPin)}
+        />
+        <ActionButton
+          accessibilityLabel="Share book"
+          animatedStyle={shareStyle}
+          icon="share-2"
+          innerRef={shareRef}
+          label="Share"
+          onPress={() => dismiss(onShare)}
+        />
+        <ActionButton
+          accessibilityLabel="Add to shelf"
+          animatedStyle={shelfStyle}
+          icon="layers"
+          label="Shelf"
+          onPress={() => dismiss(onShelf)}
+        />
+      </Animated.View>
     </Modal>
   );
 }
@@ -219,9 +239,7 @@ interface ActionButtonProps {
   icon: React.ComponentProps<typeof Feather>["name"];
   innerRef?: React.Ref<View>;
   label: string;
-  left: number;
   onPress: () => void;
-  top: number;
 }
 
 function ActionButton({
@@ -231,15 +249,10 @@ function ActionButton({
   icon,
   innerRef,
   label,
-  left,
   onPress,
-  top,
 }: ActionButtonProps): ReactElement {
   return (
-    <Animated.View
-      ref={innerRef}
-      style={[styles.actionWrap, { left, top }, animatedStyle]}
-    >
+    <Animated.View ref={innerRef} style={[styles.actionWrap, animatedStyle]}>
       <Pressable
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="button"
@@ -251,11 +264,7 @@ function ActionButton({
           pressed ? styles.actionPressed : undefined,
         ]}
       >
-        <Feather
-          color={active ? tokens.color.accent : tokens.color.ink}
-          name={icon}
-          size={22}
-        />
+        <Feather color={active ? tokens.color.accent : tokens.color.ink} name={icon} size={22} />
       </Pressable>
       <Text
         style={[styles.actionLabel, active ? styles.actionLabelActive : undefined]}
@@ -278,9 +287,49 @@ interface ActionPositions {
   shelf: Position;
 }
 
-const ARC_RADIUS = 72;
-const LABEL_HEIGHT = 18;
-const ACTION_FOOTPRINT = BTN_DIAMETER + LABEL_HEIGHT;
+export interface ActionLayout {
+  actionCenters: ActionPositions;
+  placement: "above" | "below";
+  rail: LayoutRectangle;
+}
+
+const clamp = (value: number, min: number, max: number): number =>
+  Math.max(min, Math.min(max, value));
+
+export function computeActionLayout(
+  tile: LayoutRectangle,
+  screenWidth: number,
+  screenHeight: number,
+): ActionLayout {
+  const railWidth = Math.min(
+    ACTION_RAIL_WIDTH,
+    Math.max(BTN_DIAMETER * 3, screenWidth - EDGE_PADDING * 2),
+  );
+  const maxRailX = Math.max(EDGE_PADDING, screenWidth - railWidth - EDGE_PADDING);
+  const tileCenterX = tile.x + tile.width / 2;
+  const railX = clamp(tileCenterX - railWidth / 2, EDGE_PADDING, maxRailX);
+  const railYAbove = tile.y - ACTION_RAIL_HEIGHT - ACTION_TILE_GAP;
+  const railYBelow = tile.y + tile.height + ACTION_TILE_GAP;
+  const maxRailY = Math.max(EDGE_PADDING, screenHeight - ACTION_RAIL_HEIGHT - EDGE_PADDING);
+  const placement = railYAbove >= EDGE_PADDING ? "above" : "below";
+  const railY = clamp(placement === "above" ? railYAbove : railYBelow, EDGE_PADDING, maxRailY);
+  const rail: LayoutRectangle = {
+    height: ACTION_RAIL_HEIGHT,
+    width: railWidth,
+    x: railX,
+    y: railY,
+  };
+
+  return {
+    actionCenters: {
+      pin: { x: rail.x + ACTION_ITEM_WIDTH / 2, y: rail.y + BTN_DIAMETER / 2 },
+      share: { x: rail.x + rail.width / 2, y: rail.y + BTN_DIAMETER / 2 },
+      shelf: { x: rail.x + rail.width - ACTION_ITEM_WIDTH / 2, y: rail.y + BTN_DIAMETER / 2 },
+    },
+    placement,
+    rail,
+  };
+}
 
 const clampX = (x: number, screenWidth: number): number =>
   Math.max(EDGE_PADDING, Math.min(screenWidth - BTN_DIAMETER - EDGE_PADDING, x));
@@ -289,26 +338,27 @@ export function computeActionPositions(
   tile: LayoutRectangle,
   screenWidth: number,
 ): ActionPositions {
-  const tileCenterX = tile.x + tile.width / 2;
-  const yAbove = Math.max(EDGE_PADDING, tile.y - ACTION_FOOTPRINT - 8);
+  const layout = computeActionLayout(tile, screenWidth, Number.POSITIVE_INFINITY);
 
   return {
-    share: {
-      x: clampX(tileCenterX - BTN_DIAMETER / 2, screenWidth),
-      y: yAbove,
-    },
-    pin: {
-      x: clampX(tileCenterX - ARC_RADIUS - BTN_DIAMETER / 2, screenWidth),
-      y: yAbove + 18,
-    },
-    shelf: {
-      x: clampX(tileCenterX + ARC_RADIUS - BTN_DIAMETER / 2, screenWidth),
-      y: yAbove + 18,
-    },
+    pin: topLeftFromCenter(layout.actionCenters.pin, screenWidth),
+    share: topLeftFromCenter(layout.actionCenters.share, screenWidth),
+    shelf: topLeftFromCenter(layout.actionCenters.shelf, screenWidth),
   };
 }
 
+const topLeftFromCenter = (center: Position, screenWidth: number): Position => ({
+  x: clampX(center.x - BTN_DIAMETER / 2, screenWidth),
+  y: center.y - BTN_DIAMETER / 2,
+});
+
 const styles = StyleSheet.create({
+  actionRail: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    position: "absolute",
+  },
   actionBtn: {
     alignItems: "center",
     backgroundColor: tokens.color.surface,
@@ -325,8 +375,9 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     color: tokens.color.white,
-    marginTop: 2,
+    marginTop: tokens.space[1],
     textAlign: "center",
+    width: ACTION_ITEM_WIDTH,
   },
   actionLabelActive: {
     color: tokens.color.accent,
@@ -337,8 +388,7 @@ const styles = StyleSheet.create({
   },
   actionWrap: {
     alignItems: "center",
-    position: "absolute",
-    width: BTN_DIAMETER,
+    width: ACTION_ITEM_WIDTH,
   },
   dim: {
     backgroundColor: "rgba(0,0,0,0.6)",
@@ -349,11 +399,15 @@ const styles = StyleSheet.create({
     top: 0,
   },
   tile: {
-    aspectRatio: 0.67,
     borderRadius: tokens.radius.sm,
     flex: 1,
+    justifyContent: "space-between",
     overflow: "hidden",
     padding: tokens.space[3],
+  },
+  tileAuthor: {
+    opacity: 0.72,
+    textTransform: "uppercase",
   },
   tileWrap: {
     position: "absolute",

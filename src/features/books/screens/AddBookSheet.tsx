@@ -10,14 +10,12 @@ import BottomSheet, {
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
 
-import {
-  BookForm,
-  emptyBookFormValues,
-  type BookFormValues,
-} from "../components/BookForm";
+import { BookForm, emptyBookFormValues, type BookFormValues } from "../components/BookForm";
 import { useSaveBook } from "../hooks/use-save-book";
 import type { CreateBookInput } from "../types";
 import { lookupOpenLibraryBookByIsbn } from "../../open-library";
+import { listShelves } from "../../shelves/repositories/shelves-repository";
+import type { Shelf } from "../../shelves/types";
 import { Text } from "../../../ui/Text";
 import { tokens } from "../../../ui/tokens";
 
@@ -25,6 +23,7 @@ type SheetView = "chooser" | "looking-up" | "form";
 
 export interface AddBookSheetProps {
   initialIsbn?: string | undefined;
+  initialShelfId?: string | undefined;
   initialSource?: string | undefined;
   onClose: () => void;
   onScanBarcode: () => void;
@@ -34,6 +33,7 @@ export interface AddBookSheetProps {
 
 export function AddBookSheet({
   initialIsbn,
+  initialShelfId,
   initialSource,
   onClose,
   onScanBarcode,
@@ -48,6 +48,11 @@ export function AddBookSheet({
   );
   const [formValues, setFormValues] = useState<BookFormValues>(emptyBookFormValues);
   const [scannedSource, setScannedSource] = useState<string | undefined>();
+  const [shelves, setShelves] = useState<Shelf[]>([]);
+  const [selectedShelfIds, setSelectedShelfIds] = useState<Set<string>>(
+    () => new Set(initialShelfId ? [initialShelfId] : []),
+  );
+  const [shelfError, setShelfError] = useState<string | undefined>();
 
   const snapPoints = useMemo(() => ["60%", "95%"], []);
 
@@ -59,6 +64,46 @@ export function AddBookSheet({
       sheetRef.current?.snapToIndex(0);
     }
   }, [view]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async (): Promise<void> => {
+      setShelfError(undefined);
+
+      try {
+        const nextShelves = await listShelves(db);
+
+        if (!cancelled) {
+          setShelves(nextShelves);
+        }
+      } catch (caught) {
+        if (!cancelled) {
+          setShelfError(caught instanceof Error ? caught.message : "Unable to load shelves.");
+        }
+      }
+    };
+
+    void run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [db]);
+
+  useEffect(() => {
+    if (!initialShelfId) return;
+
+    setSelectedShelfIds((current) => {
+      if (current.has(initialShelfId)) {
+        return current;
+      }
+
+      const next = new Set(current);
+      next.add(initialShelfId);
+      return next;
+    });
+  }, [initialShelfId]);
 
   // Run ISBN lookup when arriving with a scanned ISBN.
   useEffect(() => {
@@ -100,8 +145,22 @@ export function AddBookSheet({
     setView("chooser");
   };
 
+  const handleToggleShelf = (shelfId: string): void => {
+    setSelectedShelfIds((current) => {
+      const next = new Set(current);
+
+      if (next.has(shelfId)) {
+        next.delete(shelfId);
+      } else {
+        next.add(shelfId);
+      }
+
+      return next;
+    });
+  };
+
   const handleSubmit = async (input: CreateBookInput): Promise<void> => {
-    const book = await saveBook(input);
+    const book = await saveBook(input, { shelfIds: Array.from(selectedShelfIds) });
     if (book) {
       onSaved(book.id);
     }
@@ -159,6 +218,10 @@ export function AddBookSheet({
             onBack={handleBackToChooser}
             onChange={setFormValues}
             onSubmit={(input) => void handleSubmit(input)}
+            onToggleShelf={handleToggleShelf}
+            selectedShelfIds={selectedShelfIds}
+            shelfError={shelfError}
+            shelfOptions={shelves}
             source={scannedSource}
             values={formValues}
           />
@@ -197,10 +260,7 @@ function EntryChooser({
       <Pressable
         accessibilityRole="button"
         onPress={onPickManual}
-        style={({ pressed }) => [
-          styles.optionPrimary,
-          pressed ? styles.optionPressed : undefined,
-        ]}
+        style={({ pressed }) => [styles.optionPrimary, pressed ? styles.optionPressed : undefined]}
       >
         <View style={styles.optionIconAccent}>
           <Feather color={tokens.color.black} name="edit-2" size={22} />
@@ -247,10 +307,7 @@ function EntryChooser({
       <Pressable
         accessibilityRole="button"
         onPress={onPickScanQuote}
-        style={({ pressed }) => [
-          styles.optionTertiary,
-          pressed ? styles.optionPressed : undefined,
-        ]}
+        style={({ pressed }) => [styles.optionTertiary, pressed ? styles.optionPressed : undefined]}
       >
         <View style={styles.optionIcon}>
           <Feather color={tokens.color.accent} name="file-text" size={20} />

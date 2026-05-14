@@ -65,6 +65,9 @@ describe("static Figma screen shells", () => {
     expect(screen.getByText("color")).toBeTruthy();
     expect(screen.getByText("genre")).toBeTruthy();
     expect(screen.getByText("author")).toBeTruthy();
+    expect(screen.getByText("Demon Copperhead")).toBeTruthy();
+    expect(screen.getByText("B. Kingsolver")).toBeTruthy();
+    expect(screen.queryByText("literary fiction · 2022")).toBeNull();
   });
 
   it("renders private profile labels", () => {

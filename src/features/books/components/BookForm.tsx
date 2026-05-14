@@ -6,6 +6,7 @@ import { Feather } from "@expo/vector-icons";
 
 import { allBookStatusOptions } from "../book-status";
 import type { BookStatus, CreateBookInput } from "../types";
+import type { Shelf } from "../../shelves/types";
 import { Button } from "../../../ui/Button";
 import { SegmentedControl } from "../../../ui/SegmentedControl";
 import { Text } from "../../../ui/Text";
@@ -21,7 +22,6 @@ export interface BookFormValues {
   title: string;
 }
 
-
 export interface BookFormProps {
   defaultValues?: BookFormValues | undefined;
   error?: string | undefined;
@@ -29,7 +29,12 @@ export interface BookFormProps {
   onBack?: () => void;
   onChange?: (values: BookFormValues) => void;
   onSubmit: (input: CreateBookInput) => void;
+  onToggleShelf?: (shelfId: string) => void;
+  selectedShelfIds?: ReadonlySet<string> | undefined;
+  shelfError?: string | undefined;
+  shelfOptions?: readonly Shelf[] | undefined;
   source?: string | undefined;
+  submitLabel?: string | undefined;
   values?: BookFormValues | undefined;
 }
 
@@ -69,7 +74,12 @@ export function BookForm({
   onBack,
   onChange,
   onSubmit,
+  onToggleShelf,
+  selectedShelfIds,
+  shelfError,
+  shelfOptions,
   source,
+  submitLabel = "Save book",
   values,
 }: BookFormProps): ReactElement {
   const [internalValues, setInternalValues] = useState<BookFormValues>(
@@ -151,12 +161,7 @@ export function BookForm({
   return (
     <View style={styles.form}>
       {onBack ? (
-        <Pressable
-          accessibilityRole="link"
-          hitSlop={8}
-          onPress={onBack}
-          style={styles.backLink}
-        >
+        <Pressable accessibilityRole="link" hitSlop={8} onPress={onBack} style={styles.backLink}>
           <Text tone="muted" variant="caption">
             ← back
           </Text>
@@ -248,7 +253,61 @@ export function BookForm({
         />
       </View>
 
-      <Button label="Save book" loading={loading} onPress={handleSave} />
+      {shelfOptions !== undefined ? (
+        <View style={styles.shelfBlock}>
+          <Text tone="muted" variant="eyebrow">
+            SHELVES
+          </Text>
+          {shelfOptions.length > 0 ? (
+            <View style={styles.shelfList}>
+              {shelfOptions.map((shelf) => {
+                const selected = selectedShelfIds?.has(shelf.id) ?? false;
+
+                return (
+                  <Pressable
+                    accessibilityLabel={
+                      selected ? `Remove from ${shelf.title}` : `Add to ${shelf.title}`
+                    }
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    key={shelf.id}
+                    onPress={() => onToggleShelf?.(shelf.id)}
+                    style={({ pressed }) => [
+                      styles.shelfRow,
+                      selected ? styles.shelfRowSelected : undefined,
+                      pressed ? styles.shelfRowPressed : undefined,
+                    ]}
+                  >
+                    <View style={[styles.shelfAccent, { backgroundColor: shelf.accent }]} />
+                    <View style={styles.shelfCopy}>
+                      <Text variant="bodyStrong">{shelf.title}</Text>
+                      <Text tone="muted" variant="caption">
+                        {shelf.count} {shelf.count === 1 ? "book" : "books"}
+                      </Text>
+                    </View>
+                    <Feather
+                      color={selected ? tokens.color.accent : tokens.color.muted}
+                      name={selected ? "check-circle" : "plus-circle"}
+                      size={18}
+                    />
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : (
+            <Text tone="muted" variant="caption">
+              No shelves yet
+            </Text>
+          )}
+          {shelfError ? (
+            <Text tone="danger" variant="caption">
+              {shelfError}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
+
+      <Button label={submitLabel} loading={loading} onPress={handleSave} />
     </View>
   );
 }
@@ -378,5 +437,37 @@ const styles = StyleSheet.create({
   },
   statusBlock: {
     gap: tokens.space[2],
+  },
+  shelfAccent: {
+    alignSelf: "stretch",
+    borderRadius: tokens.radius.pill,
+    width: 4,
+  },
+  shelfBlock: {
+    gap: tokens.space[2],
+  },
+  shelfCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  shelfList: {
+    gap: tokens.space[2],
+  },
+  shelfRow: {
+    alignItems: "center",
+    backgroundColor: tokens.color.surface,
+    borderColor: tokens.color.border,
+    borderRadius: tokens.radius.md,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: tokens.space[3],
+    minHeight: 58,
+    padding: tokens.space[3],
+  },
+  shelfRowPressed: {
+    opacity: 0.85,
+  },
+  shelfRowSelected: {
+    borderColor: tokens.color.accent,
   },
 });

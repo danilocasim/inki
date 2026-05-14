@@ -56,7 +56,7 @@ export function DashboardScreen({
 }: DashboardScreenProps): ReactElement {
   const [activeTab, setActiveTab] = useState<BookStatus>("reading");
   const [activeLongPress, setActiveLongPress] = useState<ActiveLongPress | null>(null);
-  const { width: windowWidth } = useWindowDimensions();
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const dashboard = data ?? emptyDashboardData;
   const filteredBooks = dashboard.books.filter((book) => book.status === activeTab);
   const visibleBooks = orderBooksForStack(filteredBooks).slice(0, 6);
@@ -96,27 +96,34 @@ export function DashboardScreen({
         </View>
       </View>
 
-      <View style={styles.filterRow}>
+      <View style={styles.filterRow} testID="dashboard-filter-row">
         <SegmentedControl
           onValueChange={setActiveTab}
           options={bookStatusOptions}
           value={activeTab}
         />
-        <Text tone="muted" style={styles.filterCount} variant="caption">
-          {visibleBooks.length} shown · {dashboard.books.length} total
+        <Text
+          tone="muted"
+          style={styles.filterCount}
+          testID="dashboard-filter-summary"
+          variant="caption"
+        >
+          {`${visibleBooks.length} shown · ${dashboard.books.length} total`}
         </Text>
       </View>
 
       <View style={styles.stackSection}>
-        <View style={styles.sectionHeader}>
-          <Text variant="hero">The Stack</Text>
-          <Text tone="muted" variant="eyebrow">
+        <View style={styles.sectionHeader} testID="dashboard-stack-header">
+          <Text numberOfLines={1} style={styles.stackTitle} variant="hero">
+            The Stack
+          </Text>
+          <Text tone="muted" style={styles.stackCount} variant="eyebrow">
             {visibleBooks.length} ACTIVE
           </Text>
         </View>
 
         {visibleBooks.length > 0 ? (
-          <View style={styles.bookGrid}>
+          <View style={styles.bookGrid} testID="dashboard-book-grid">
             {visibleBooks.map((book) => (
               <StackBook
                 book={book}
@@ -148,7 +155,12 @@ export function DashboardScreen({
           </View>
           <View style={styles.statGrid}>
             {dashboard.yearlyStats.map((stat) => (
-              <StatTile detail={stat.detail} key={stat.label} label={stat.label} value={stat.value} />
+              <StatTile
+                detail={stat.detail}
+                key={stat.label}
+                label={stat.label}
+                value={stat.value}
+              />
             ))}
           </View>
         </>
@@ -166,6 +178,7 @@ export function DashboardScreen({
           onPin={() => onPinBook(activeLongPress.book)}
           onShare={() => onShareBook(activeLongPress.book)}
           onShelf={() => onShelveBook(activeLongPress.book)}
+          screenHeight={windowHeight}
           screenWidth={windowWidth}
           tileRect={activeLongPress.rect}
         />
@@ -190,10 +203,10 @@ function StackBook({
 }): ReactElement {
   const progress = book.progress ?? progressFromPages(book);
   const pages = getBookPages(book);
-  const tileRef = useRef<View>(null);
+  const coverRef = useRef<View>(null);
 
   const handleLongPress = (): void => {
-    tileRef.current?.measureInWindow((x, y, width, height) => {
+    coverRef.current?.measureInWindow((x, y, width, height) => {
       onLongPress({ height, width, x, y });
     });
   };
@@ -211,10 +224,9 @@ function StackBook({
       }}
       onLongPress={handleLongPress}
       onPress={() => onOpenBook(book.id)}
-      ref={tileRef}
       style={styles.bookTile}
     >
-      <View style={[styles.bookCover, { backgroundColor: book.palette.cover }]}>
+      <View ref={coverRef} style={[styles.bookCover, { backgroundColor: book.palette.cover }]}>
         {book.coverPath ? (
           <Image
             accessibilityIgnoresInvertColors
@@ -369,7 +381,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: tokens.space[3],
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
   },
   bookTile: {
     flexBasis: "30.8%",
@@ -384,13 +396,12 @@ const styles = StyleSheet.create({
   },
   filterRow: {
     alignItems: "flex-start",
-    flexDirection: "row",
-    gap: tokens.space[3],
-    justifyContent: "space-between",
+    flexDirection: "column",
+    gap: tokens.space[2],
   },
   filterCount: {
-    paddingTop: tokens.space[3],
-    textAlign: "right",
+    alignSelf: "flex-start",
+    maxWidth: "100%",
   },
   heatCell: {
     borderColor: tokens.color.white,
@@ -461,14 +472,20 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     alignItems: "flex-start",
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: "column",
+    gap: tokens.space[1],
   },
   stackCard: {
     gap: tokens.space[4],
   },
   stackSection: {
     gap: tokens.space[4],
+  },
+  stackCount: {
+    alignSelf: "flex-end",
+  },
+  stackTitle: {
+    maxWidth: "100%",
   },
   statGrid: {
     flexDirection: "row",

@@ -1,8 +1,12 @@
 import type { ReactElement } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Image, Pressable, StyleSheet, TextInput, View } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
 
 import { figmaProfile } from "../dashboard/fixtures";
+import { defaultUserProfile, type UserProfile } from "./types";
+import { Button } from "../../ui/Button";
 import { Card } from "../../ui/Card";
 import { IconButton, type FeatherIconName } from "../../ui/IconButton";
 import { Screen } from "../../ui/Screen";
@@ -18,6 +22,10 @@ export interface PrivateProfileScreenProps {
   onOpenPassport?: () => void;
   onOpenSettings: () => void;
   onOpenWrapped?: () => void;
+  onSaveProfile?: (profile: UserProfile) => unknown;
+  profile?: UserProfile | undefined;
+  profileError?: string | undefined;
+  savingProfile?: boolean;
 }
 
 /** Local-only profile/settings entry from Figma frame 4:691. */
@@ -29,7 +37,84 @@ export function PrivateProfileScreen({
   onOpenPassport = noop,
   onOpenSettings,
   onOpenWrapped = noop,
+  onSaveProfile = noopSaveProfile,
+  profile,
+  profileError,
+  savingProfile = false,
 }: PrivateProfileScreenProps): ReactElement {
+  const activeProfile = profile ?? defaultUserProfile;
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [draft, setDraft] = useState<UserProfile>(activeProfile);
+  const [localProfileError, setLocalProfileError] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (!editingProfile) {
+      setDraft(activeProfile);
+    }
+  }, [activeProfile, editingProfile]);
+
+  const updateDraft = <K extends keyof UserProfile>(key: K, value: UserProfile[K]): void => {
+    setDraft((current) => ({ ...current, [key]: value }));
+  };
+
+  const handlePickPhoto = async (): Promise<void> => {
+    setLocalProfileError(undefined);
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      setLocalProfileError("Photo library access is needed to choose a profile picture.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.85,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setEditingProfile(true);
+      updateDraft("avatarPath", result.assets[0].uri);
+    }
+  };
+
+  const handleSaveProfile = (): void => {
+    const nextProfile: UserProfile = {
+      avatarPath: draft.avatarPath?.trim() || undefined,
+      bio: draft.bio.trim(),
+      displayName: draft.displayName.trim(),
+      handle: draft.handle.trim(),
+      readerSince: draft.readerSince.trim(),
+    };
+
+    if (nextProfile.displayName.length === 0 || nextProfile.handle.length === 0) {
+      setLocalProfileError("Display name and handle are required.");
+      return;
+    }
+
+    setLocalProfileError(undefined);
+    try {
+      const result = onSaveProfile(nextProfile);
+
+      if (isPromiseLike(result)) {
+        void Promise.resolve(result)
+          .then(() => setEditingProfile(false))
+          .catch((caught: unknown) => {
+            setLocalProfileError(
+              caught instanceof Error ? caught.message : "Unable to save profile.",
+            );
+          });
+        return;
+      }
+    } catch (caught) {
+      setLocalProfileError(caught instanceof Error ? caught.message : "Unable to save profile.");
+      return;
+    }
+
+    setEditingProfile(false);
+  };
+
   const actionForLabel = (label: string): (() => void) => {
     if (label === "reading wrapped") {
       return onOpenWrapped;
@@ -57,21 +142,81 @@ export function PrivateProfileScreen({
       </View>
 
       <View style={styles.identityRow}>
-        <View style={styles.avatar}>
-          <Text variant="screenTitle">A</Text>
+        <View style={styles.avatarStack}>
+          <View style={styles.avatar}>
+            {activeProfile.avatarPath ? (
+              <Image
+                accessibilityIgnoresInvertColors
+                resizeMode="cover"
+                source={{ uri: activeProfile.avatarPath }}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <Text variant="screenTitle">{activeProfile.displayName.charAt(0).toUpperCase()}</Text>
+            )}
+          </View>
+          <Pressable accessibilityRole="button" onPress={() => void handlePickPhoto()}>
+            <Text tone="accent" variant="caption">
+              change photo
+            </Text>
+          </Pressable>
         </View>
         <View style={styles.identityCopy}>
-          <Text variant="screenTitle">{figmaProfile.handle}</Text>
+          <Text variant="screenTitle">{activeProfile.handle}</Text>
           <Text tone="muted" variant="bodyStrong">
-            reader · inki since Jan 2026
+            {activeProfile.displayName} · inki since {activeProfile.readerSince}
+          </Text>
+          <Text tone="muted" variant="caption">
+            {activeProfile.bio}
           </Text>
           <View style={styles.badge}>
             <Text tone="muted" variant="eyebrow">
               {figmaProfile.privacyBadge}
             </Text>
           </View>
+          <Button
+            label="edit profile"
+            onPress={() => setEditingProfile(true)}
+            variant="secondary"
+          />
         </View>
       </View>
+
+      {editingProfile ? (
+        <Card style={styles.profileEditor} variant="ink">
+          <Text tone="muted" variant="eyebrow">
+            PROFILE DETAILS
+          </Text>
+          <ProfileField
+            label="Display name"
+            onChangeText={(value) => updateDraft("displayName", value)}
+            value={draft.displayName}
+          />
+          <ProfileField
+            autoCapitalize="none"
+            label="Profile handle"
+            onChangeText={(value) => updateDraft("handle", value)}
+            value={draft.handle}
+          />
+          <ProfileField
+            label="Bio"
+            multiline
+            onChangeText={(value) => updateDraft("bio", value)}
+            value={draft.bio}
+          />
+          <ProfileField
+            label="Reader since"
+            onChangeText={(value) => updateDraft("readerSince", value)}
+            value={draft.readerSince}
+          />
+          {localProfileError || profileError ? (
+            <Text tone="danger">{localProfileError ?? profileError}</Text>
+          ) : null}
+          <Button label="save profile" loading={savingProfile} onPress={handleSaveProfile} />
+        </Card>
+      ) : profileError ? (
+        <Text tone="danger">{profileError}</Text>
+      ) : null}
 
       <View style={styles.statRow}>
         {profileStats.map((stat) => (
@@ -121,6 +266,37 @@ export function PrivateProfileScreen({
         </View>
       </View>
     </Screen>
+  );
+}
+
+function ProfileField({
+  autoCapitalize = "sentences",
+  label,
+  multiline = false,
+  onChangeText,
+  value,
+}: {
+  autoCapitalize?: "none" | "sentences" | "words";
+  label: string;
+  multiline?: boolean;
+  onChangeText: (value: string) => void;
+  value: string;
+}): ReactElement {
+  return (
+    <View style={styles.field}>
+      <Text tone="muted" variant="eyebrow">
+        {label}
+      </Text>
+      <TextInput
+        accessibilityLabel={label}
+        autoCapitalize={autoCapitalize}
+        multiline={multiline}
+        onChangeText={onChangeText}
+        placeholderTextColor={tokens.color.muted}
+        style={[styles.input, multiline ? styles.multilineInput : undefined]}
+        value={value}
+      />
+    </View>
   );
 }
 
@@ -188,6 +364,12 @@ const iconForProfileAction = (label: string): FeatherIconName => {
 
 const noop = (): void => undefined;
 const noopAsync = async (): Promise<void> => undefined;
+const noopSaveProfile = async (_profile: UserProfile): Promise<void> => undefined;
+const isPromiseLike = (value: unknown): value is PromiseLike<unknown> =>
+  typeof value === "object" &&
+  value !== null &&
+  "then" in value &&
+  typeof value.then === "function";
 
 const profileStats = [
   { detail: "books finished", label: "books", value: "17" },
@@ -234,7 +416,16 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     height: 104,
     justifyContent: "center",
+    overflow: "hidden",
     width: 104,
+  },
+  avatarImage: {
+    height: "100%",
+    width: "100%",
+  },
+  avatarStack: {
+    alignItems: "center",
+    gap: tokens.space[2],
   },
   badge: {
     alignSelf: "flex-start",
@@ -280,11 +471,33 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: tokens.space[5],
   },
+  input: {
+    backgroundColor: tokens.color.surfaceMuted,
+    borderColor: tokens.color.border,
+    borderRadius: tokens.radius.md,
+    borderWidth: 1,
+    color: tokens.color.ink,
+    fontFamily: tokens.typography.body.fontFamily,
+    fontSize: 16,
+    minHeight: 48,
+    paddingHorizontal: tokens.space[3],
+    paddingVertical: tokens.space[3],
+  },
   message: {
     textAlign: "center",
   },
+  multilineInput: {
+    minHeight: 86,
+    textAlignVertical: "top",
+  },
+  profileEditor: {
+    gap: tokens.space[4],
+  },
   content: {
     paddingBottom: tokens.space[12],
+  },
+  field: {
+    gap: tokens.space[2],
   },
   statRow: {
     flexDirection: "row",

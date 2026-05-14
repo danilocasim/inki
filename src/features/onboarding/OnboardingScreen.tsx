@@ -88,9 +88,11 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
   // ── add book state ──────────────────────────────────────────────
   const [addMode, setAddMode] = useState<AddMode>("scan");
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [manualCoverPath, setManualCoverPath] = useState("");
   const [manualTitle, setManualTitle] = useState("");
   const [manualAuthor, setManualAuthor] = useState("");
   const [manualPages, setManualPages] = useState("");
+  const [coverPickerError, setCoverPickerError] = useState<string | undefined>();
 
   // ── navigation ──────────────────────────────────────────────────
   const next = () => setStep((s) => Math.min(s + 1, TOTAL - 1));
@@ -113,6 +115,7 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
         const book = await repo.create({
           title: manualTitle.trim(),
           author: manualAuthor.trim() || "Unknown",
+          coverPath: manualCoverPath.trim() === "" ? undefined : manualCoverPath.trim(),
           status: "reading",
           totalPages: manualPages ? parseInt(manualPages, 10) : undefined,
           source: "onboarding",
@@ -123,6 +126,27 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
       }
     }
     next();
+  };
+
+  const handlePickBookCover = async () => {
+    setCoverPickerError(undefined);
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      setCoverPickerError("Photo library access is needed to select a cover image.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [2, 3],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.85,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setManualCoverPath(result.assets[0].uri);
+    }
   };
 
   // The line carried forward to all subsequent steps
@@ -262,6 +286,35 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
       {/* manual entry mode */}
       {addMode === "manual" && (
         <View style={s.manualBlock}>
+          <Pressable
+            accessibilityLabel="Pick a cover image"
+            accessibilityRole="button"
+            onPress={() => void handlePickBookCover()}
+            style={s.coverPickerRow}
+          >
+            <View style={s.coverPreview}>
+              {manualCoverPath !== "" ? (
+                <Image
+                  accessibilityIgnoresInvertColors
+                  accessibilityLabel="Selected book cover image"
+                  resizeMode="cover"
+                  source={{ uri: manualCoverPath }}
+                  style={StyleSheet.absoluteFill}
+                />
+              ) : (
+                <>
+                  <Feather color={tokens.color.muted} name="image" size={20} />
+                  <Text style={s.coverPreviewText}>cover</Text>
+                </>
+              )}
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.optionTitle}>cover photo</Text>
+              <Text style={s.optionDesc}>{manualCoverPath ? "selected" : "optional"}</Text>
+            </View>
+            <Feather color={tokens.color.muted} name="chevron-right" size={18} />
+          </Pressable>
+          {coverPickerError ? <Text style={s.coverError}>{coverPickerError}</Text> : null}
           <TextInput
             onChangeText={setManualTitle}
             placeholder="Title"
@@ -849,6 +902,29 @@ const s = StyleSheet.create({
 
   // ── manual block ──
   manualBlock: { gap: sp[2] },
+  coverError: { color: c.danger, fontSize: 12, lineHeight: 17 },
+  coverPickerRow: {
+    alignItems: "center",
+    backgroundColor: c.surface,
+    borderColor: c.border,
+    borderRadius: r.md,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: sp[3],
+    padding: sp[3],
+  },
+  coverPreview: {
+    alignItems: "center",
+    backgroundColor: c.surfaceMuted,
+    borderColor: c.border,
+    borderRadius: r.sm,
+    borderWidth: 1,
+    height: 92,
+    justifyContent: "center",
+    overflow: "hidden",
+    width: 62,
+  },
+  coverPreviewText: { color: c.muted, fontSize: 11, fontWeight: "700", marginTop: sp[1] },
   manualInput: {
     backgroundColor: c.surface,
     borderColor: c.border,
