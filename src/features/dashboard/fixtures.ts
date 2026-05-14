@@ -54,8 +54,8 @@ export const figmaBooks: readonly FigmaBook[] = [
     42,
     "fantasy",
     "2020",
-    "#D6C6A3",
-    "#8A5C36",
+    "#1F3A5F", // deep ink blue
+    "#0E1F36",
   ),
   makeBook(
     "klara",
@@ -65,8 +65,8 @@ export const figmaBooks: readonly FigmaBook[] = [
     100,
     "sci-fi",
     "2021",
-    "#C98A6A",
-    "#7D3F26",
+    "#B5512A", // burnished terracotta
+    "#71301A",
   ),
   makeBook(
     "overstory",
@@ -76,8 +76,8 @@ export const figmaBooks: readonly FigmaBook[] = [
     31,
     "literary fiction",
     "2018",
-    "#81906E",
-    "#3E513A",
+    "#1F4D3A", // rich forest green
+    "#0F2C20",
   ),
   makeBook(
     "tomb",
@@ -87,8 +87,8 @@ export const figmaBooks: readonly FigmaBook[] = [
     undefined,
     "translated",
     "2018",
-    "#D8A24A",
-    "#8C6222",
+    "#C18B1F", // saffron gold
+    "#7C5511",
   ),
   makeBook(
     "bewilderment",
@@ -98,8 +98,8 @@ export const figmaBooks: readonly FigmaBook[] = [
     100,
     "sci-fi",
     "2021",
-    "#9C6F88",
-    "#5A344B",
+    "#5C2D63", // amethyst plum
+    "#341836",
   ),
   makeBook(
     "crossroads",
@@ -109,8 +109,8 @@ export const figmaBooks: readonly FigmaBook[] = [
     18,
     "family saga",
     "2021",
-    "#A55D44",
-    "#713529",
+    "#8A2A2E", // deep brick red
+    "#511518",
   ),
   makeBook(
     "normal-people",
@@ -120,8 +120,8 @@ export const figmaBooks: readonly FigmaBook[] = [
     72,
     "contemporary",
     "2018",
-    "#B9C5D8",
-    "#5C6B82",
+    "#2E6F8C", // deep sea teal
+    "#194455",
   ),
   makeBook(
     "demon",
@@ -131,8 +131,8 @@ export const figmaBooks: readonly FigmaBook[] = [
     100,
     "literary fiction",
     "2022",
-    "#BD704E",
-    "#793C25",
+    "#A53E1D", // burnt umber
+    "#65240F",
   ),
   makeBook(
     "remains",
@@ -142,8 +142,8 @@ export const figmaBooks: readonly FigmaBook[] = [
     100,
     "classic",
     "1989",
-    "#8A9A8E",
-    "#425248",
+    "#27513F", // mossy emerald
+    "#13302A",
   ),
   makeBook(
     "babel",
@@ -153,8 +153,8 @@ export const figmaBooks: readonly FigmaBook[] = [
     undefined,
     "fantasy",
     "2022",
-    "#4F5B74",
-    "#283246",
+    "#1A2A5E", // navy indigo
+    "#0B143A",
   ),
   makeBook(
     "pachinko",
@@ -164,8 +164,8 @@ export const figmaBooks: readonly FigmaBook[] = [
     undefined,
     "historical",
     "2017",
-    "#CDAA68",
-    "#7F6130",
+    "#7B2D1B", // dark cinnamon
+    "#481810",
   ),
 ];
 

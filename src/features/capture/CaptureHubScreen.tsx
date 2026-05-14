@@ -10,26 +10,12 @@ import { tokens } from "../../ui/tokens";
 
 export interface CaptureHubScreenProps {
   onCaptureQuote: () => void;
-  onScanIsbn: () => void;
 }
 
-export function CaptureHubScreen({
-  onCaptureQuote,
-  onScanIsbn
-}: CaptureHubScreenProps): ReactElement {
+export function CaptureHubScreen({ onCaptureQuote }: CaptureHubScreenProps): ReactElement {
   return (
     <Screen contentStyle={styles.content} title="capture">
       <View style={styles.cards}>
-        <Card style={styles.card} variant="ink">
-          <View style={styles.iconBadge}>
-            <Feather color={tokens.color.accent} name="hash" size={24} />
-          </View>
-          <View style={styles.cardCopy}>
-            <Text variant="sectionTitle">scan ISBN</Text>
-            <Text tone="muted">add a book by barcode</Text>
-          </View>
-          <IconButton label="Scan ISBN" name="arrow-right" onPress={onScanIsbn} variant="ghost" />
-        </Card>
         <Card style={styles.card} variant="ink">
           <View style={styles.iconBadge}>
             <Feather color={tokens.color.accent} name="file-text" size={24} />
@@ -42,7 +28,7 @@ export function CaptureHubScreen({
         </Card>
       </View>
       <Text tone="muted" style={styles.footer} variant="caption">
-        fully offline · processed on-device
+        fully offline · processed on-device · to add a book, use + on the dashboard
       </Text>
     </Screen>
   );

@@ -18,8 +18,8 @@ export const createBooksRepository = (db: DatabaseWriter): BooksRepository => ({
     await db.runAsync(
       `INSERT INTO books (
         id, title, author, status, total_pages, current_page, cover_color, spine_color,
-        isbn, genre, source, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+        cover_path, isbn, genre, source, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
       [
         id,
         input.title.trim(),
@@ -29,6 +29,7 @@ export const createBooksRepository = (db: DatabaseWriter): BooksRepository => ({
         0,
         defaultCoverPalette.cover,
         defaultCoverPalette.spine,
+        input.coverPath ?? null,
         input.isbn ?? null,
         input.genre ?? null,
         input.source ?? "manual",

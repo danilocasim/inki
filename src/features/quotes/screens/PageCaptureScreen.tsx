@@ -1,10 +1,9 @@
 import type { ReactElement } from "react";
-import { useState } from "react";
-import { CameraView, type BarcodeScanningResult, type BarcodeType, useCameraPermissions } from "expo-camera";
+import { useRef, useState } from "react";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
-import { getIsbnFromBarcode } from "../services/isbn-service";
 import { mapPermissionState, PermissionGate } from "../../../lib/permissions";
 import { Button } from "../../../ui/Button";
 import { Card } from "../../../ui/Card";
@@ -12,39 +11,41 @@ import { Screen } from "../../../ui/Screen";
 import { Text } from "../../../ui/Text";
 import { tokens } from "../../../ui/tokens";
 
-export interface BarcodeScanScreenProps {
+export interface PageCaptureScreenProps {
   onBack?: () => void;
-  onIsbnScanned: (isbn: string) => void;
+  onCaptured: (photoUri: string) => void;
   onManualFallback: () => void;
 }
 
-const isbnBarcodeTypes: BarcodeType[] = ["ean13"];
-
-export function BarcodeScanScreen({
+export function PageCaptureScreen({
   onBack,
-  onIsbnScanned,
-  onManualFallback
-}: BarcodeScanScreenProps): ReactElement {
+  onCaptured,
+  onManualFallback,
+}: PageCaptureScreenProps): ReactElement {
   const [permission, requestPermission] = useCameraPermissions();
-  const [feedback, setFeedback] = useState("Align the ISBN barcode on the back cover.");
-  const [hasScanned, setHasScanned] = useState(false);
+  const [feedback, setFeedback] = useState(
+    "Frame the page so the lines you want to capture sit inside the box.",
+  );
+  const [capturing, setCapturing] = useState(false);
+  const cameraRef = useRef<CameraView>(null);
   const permissionState = mapPermissionState(permission);
 
-  const handleBarcodeScanned = (result: BarcodeScanningResult): void => {
-    if (hasScanned) {
-      return;
+  const handleCapture = async (): Promise<void> => {
+    if (capturing || !cameraRef.current) return;
+    setCapturing(true);
+    setFeedback("Capturing…");
+    try {
+      const photo = await cameraRef.current.takePictureAsync({ quality: 0.85 });
+      if (photo?.uri) {
+        onCaptured(photo.uri);
+      } else {
+        setFeedback("Capture failed. Try again or enter the quote manually.");
+      }
+    } catch {
+      setFeedback("Capture failed. Try again or enter the quote manually.");
+    } finally {
+      setCapturing(false);
     }
-
-    const isbn = getIsbnFromBarcode(result);
-
-    if (!isbn) {
-      setFeedback("That barcode is not a valid book ISBN. Try the EAN-13 barcode on the back cover or enter manually.");
-      return;
-    }
-
-    setHasScanned(true);
-    setFeedback(`Found ISBN ${isbn}. Opening editable book draft...`);
-    onIsbnScanned(isbn);
   };
 
   return (
@@ -52,7 +53,7 @@ export function BarcodeScanScreen({
       {onBack ? (
         <View style={styles.headerRow}>
           <Pressable
-            accessibilityLabel="Back to add book"
+            accessibilityLabel="Back"
             accessibilityRole="button"
             hitSlop={12}
             onPress={onBack}
@@ -60,14 +61,14 @@ export function BarcodeScanScreen({
           >
             <Feather color={tokens.color.inkSoft} name="arrow-left" size={20} />
           </Pressable>
-          <Text variant="screenTitle">scan barcode</Text>
+          <Text variant="screenTitle">scan a line</Text>
         </View>
       ) : (
-        <Text variant="screenTitle">scan barcode</Text>
+        <Text variant="screenTitle">scan a line</Text>
       )}
       <PermissionGate
-        blockedMessage="Camera access is blocked. Enable it in system settings, or add the book manually."
-        deniedMessage="Inki uses the camera only to scan local ISBN barcodes. Manual entry works offline."
+        blockedMessage="Camera access is blocked. Enable it in system settings, or enter the quote manually."
+        deniedMessage="Inki uses the camera only to capture page text on-device. Manual entry works offline."
         manualFallbackLabel="enter manually"
         onManualFallback={onManualFallback}
         onRequestPermission={() => {
@@ -78,22 +79,31 @@ export function BarcodeScanScreen({
       >
         <Card style={styles.camera} variant="ink">
           <CameraView
-            barcodeScannerSettings={{ barcodeTypes: isbnBarcodeTypes }}
+            ref={cameraRef}
             facing="back"
-            onBarcodeScanned={hasScanned ? undefined : handleBarcodeScanned}
-            onMountError={() => setFeedback("Camera failed to start. You can still enter the ISBN manually.")}
+            onMountError={() =>
+              setFeedback("Camera failed to start. You can still enter the quote manually.")
+            }
             style={StyleSheet.absoluteFill}
           />
           <View pointerEvents="none" style={styles.frame}>
-            <Text tone="inverse" variant="eyebrow">ALIGN</Text>
-            <Text tone="inverse" style={styles.frameText} variant="hero">BARCODE</Text>
-            <Text tone="inverse" variant="eyebrow">IN FRAME</Text>
+            <Text tone="inverse" variant="eyebrow">
+              ALIGN
+            </Text>
+            <Text style={styles.frameText} tone="inverse" variant="hero">
+              PAGE
+            </Text>
+            <Text tone="inverse" variant="eyebrow">
+              IN FRAME
+            </Text>
           </View>
         </Card>
         <Text tone="muted">{feedback}</Text>
-        <Text tone="muted" variant="caption">
-          Open Library lookup is optional; scanned ISBNs always open an editable offline draft.
-        </Text>
+        <Button
+          label={capturing ? "capturing…" : "capture page"}
+          loading={capturing}
+          onPress={() => void handleCapture()}
+        />
         <Button label="enter manually" onPress={onManualFallback} variant="secondary" />
       </PermissionGate>
     </Screen>
@@ -107,18 +117,18 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.pill,
     height: 36,
     justifyContent: "center",
-    width: 36
+    width: 36,
   },
   camera: {
     alignItems: "center",
     backgroundColor: tokens.color.black,
-    minHeight: 650,
     justifyContent: "center",
-    overflow: "hidden"
+    minHeight: 480,
+    overflow: "hidden",
   },
   content: {
     paddingHorizontal: tokens.space[3],
-    paddingTop: tokens.space[6]
+    paddingTop: tokens.space[6],
   },
   frame: {
     alignItems: "center",
@@ -127,16 +137,16 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     gap: tokens.space[2],
     justifyContent: "center",
-    minHeight: 210,
-    width: "82%"
+    minHeight: 240,
+    width: "82%",
   },
   frameText: {
     letterSpacing: 3,
-    textAlign: "center"
+    textAlign: "center",
   },
   headerRow: {
     alignItems: "center",
     flexDirection: "row",
-    gap: tokens.space[3]
-  }
+    gap: tokens.space[3],
+  },
 });

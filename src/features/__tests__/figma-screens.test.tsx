@@ -15,7 +15,7 @@ describe("static Figma screen shells", () => {
   it("renders the home dashboard labels", () => {
     renderWithProviders(<DashboardScreen />);
 
-    expect(screen.getByLabelText("Add Book")).toBeTruthy();
+    expect(screen.getAllByLabelText("Add Book").length).toBeGreaterThan(0);
     expect(screen.getByText("The Stack")).toBeTruthy();
     expect(screen.getByText("The Pulse")).toBeTruthy();
   });
@@ -93,8 +93,8 @@ describe("static Figma screen shells", () => {
     expect(screen.getByText("notifications")).toBeTruthy();
     expect(screen.getByText("12 day share streak")).toBeTruthy();
 
-    renderWithProviders(<CaptureHubScreen onCaptureQuote={noop} onScanIsbn={noop} />);
-    expect(screen.getByText("scan ISBN")).toBeTruthy();
+    renderWithProviders(<CaptureHubScreen onCaptureQuote={noop} />);
+    expect(screen.queryByText("scan ISBN")).toBeNull();
     expect(screen.getByText("capture quote")).toBeTruthy();
   });
 

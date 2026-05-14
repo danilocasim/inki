@@ -18,3 +18,8 @@ export async function markOnboardingComplete(): Promise<void> {
   ensureTable();
   db.runSync("INSERT OR REPLACE INTO prefs (key, value) VALUES ('onboarded', '1')");
 }
+
+export async function resetOnboarding(): Promise<void> {
+  ensureTable();
+  db.runSync("DELETE FROM prefs WHERE key = 'onboarded'");
+}

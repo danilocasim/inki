@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 
 import { CaptureHubScreen } from "../../src/features/capture/CaptureHubScreen";
 
-export default function CaptureRoute(): ReactElement {
+export default function CaptureTabRoute(): ReactElement {
   const router = useRouter();
 
   return <CaptureHubScreen onCaptureQuote={() => router.push("/capture/page")} />;

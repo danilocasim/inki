@@ -47,6 +47,7 @@ export interface BookRow {
 
 export interface CreateBookInput {
   author: string;
+  coverPath?: string | undefined;
   genre?: string | undefined;
   isbn?: string | undefined;
   source?: string | undefined;

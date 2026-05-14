@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Image,
   ImageBackground,
@@ -20,8 +20,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import { Text } from "../../ui/Text";
 import { fontFamily, tokens } from "../../ui/tokens";
 import { createBooksRepository } from "../books/repositories/books-repository";
-import type { Book, BookRow } from "../books/types";
-import { mapBookRow } from "../books/types";
+import type { Book } from "../books/types";
 import { markOnboardingComplete } from "./onboarding-storage";
 
 const TOTAL = 10;
@@ -41,7 +40,7 @@ const HIGHLIGHT_COLORS = [
 
 const DEMO_TAGS = ["#architecture", "#memory", "#loneliness", "#wonder", "#place", "#self"];
 
-type AddMode = "scan" | "search" | "manual";
+type AddMode = "scan" | "manual";
 
 interface NavConfig {
   label: string;
@@ -85,33 +84,22 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
   };
 
   // ── add book state ──────────────────────────────────────────────
-  const [addMode, setAddMode] = useState<AddMode>("search");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [bookResults, setBookResults] = useState<Book[]>([]);
+  const [addMode, setAddMode] = useState<AddMode>("scan");
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [manualTitle, setManualTitle] = useState("");
   const [manualAuthor, setManualAuthor] = useState("");
   const [manualPages, setManualPages] = useState("");
-
-  // Fetch books when in search mode
-  useEffect(() => {
-    if (addMode !== "search") return;
-    const q = searchQuery.trim();
-    const promise = q
-      ? db.getAllAsync<BookRow>(
-          "SELECT * FROM books WHERE title LIKE ? OR author LIKE ? ORDER BY updated_at DESC",
-          [`%${q}%`, `%${q}%`],
-        )
-      : db.getAllAsync<BookRow>("SELECT * FROM books ORDER BY updated_at DESC", []);
-    promise.then((rows) => setBookResults(rows.map(mapBookRow)));
-  }, [searchQuery, addMode, db]);
 
   // ── navigation ──────────────────────────────────────────────────
   const next = () => setStep((s) => Math.min(s + 1, TOTAL - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
   const finish = async () => {
-    await markOnboardingComplete();
+    try {
+      await markOnboardingComplete();
+    } catch {
+      // proceed even if the prefs write fails — onComplete must always fire
+    }
     onComplete();
   };
 
@@ -236,12 +224,11 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
 
       {/* option selector */}
       <View style={s.optionList}>
-        {(["scan", "search", "manual"] as AddMode[]).map((mode) => {
-          const icons = { scan: "camera", search: "search", manual: "edit-2" } as const;
-          const labels = { scan: "scan barcode", search: "search", manual: "enter manually" };
+        {(["scan", "manual"] as AddMode[]).map((mode) => {
+          const icons = { scan: "camera", manual: "edit-2" } as const;
+          const labels = { scan: "scan barcode", manual: "enter manually" };
           const descs = {
             scan: "Point at the back cover. Open Library does the rest.",
-            search: "Type a title or author. Tap to add.",
             manual: "Title, author, page count. Done.",
           };
           const active = addMode === mode;
@@ -268,48 +255,6 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
           );
         })}
       </View>
-
-      {/* search mode */}
-      {addMode === "search" && (
-        <View style={s.searchBlock}>
-          <View style={s.searchInputRow}>
-            <Feather color={tokens.color.muted} name="search" size={16} />
-            <TextInput
-              autoFocus
-              onChangeText={setSearchQuery}
-              placeholder="Search your books..."
-              placeholderTextColor={tokens.color.muted}
-              style={s.searchInput}
-              value={searchQuery}
-            />
-          </View>
-          {bookResults.length === 0 ? (
-            <Text style={s.emptySearch}>
-              {searchQuery ? "No books match that search." : "No books in your library yet."}
-            </Text>
-          ) : (
-            bookResults.map((book) => (
-              <Pressable
-                key={book.id}
-                onPress={() => setSelectedBook((b) => (b?.id === book.id ? null : book))}
-                style={[s.bookResultRow, selectedBook?.id === book.id && s.bookResultSelected]}
-              >
-                <View style={[s.bookCover, { backgroundColor: book.palette.cover }]} />
-                <View style={{ flex: 1 }}>
-                  <Text style={s.optionTitle}>{book.title}</Text>
-                  <Text style={s.optionDesc}>
-                    {book.author}
-                    {book.totalPages ? ` · ${book.totalPages} pages` : ""}
-                  </Text>
-                </View>
-                {selectedBook?.id === book.id && (
-                  <Feather color={tokens.color.accent} name="check" size={18} />
-                )}
-              </Pressable>
-            ))
-          )}
-        </View>
-      )}
 
       {/* manual entry mode */}
       {addMode === "manual" && (
@@ -510,7 +455,6 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
 
   const SHARE_ICONS: { icon: React.ComponentProps<typeof Feather>["name"]; label: string }[] = [
     { icon: "camera", label: "story" },
-    { icon: "clipboard", label: "copy" },
     { icon: "download", label: "save" },
     { icon: "share-2", label: "share" },
   ];
@@ -899,34 +843,6 @@ const s = StyleSheet.create({
   optionDesc: { color: c.inkSoft, fontSize: 13, lineHeight: 18, marginTop: 2 },
   radioOff: { borderColor: c.border, borderRadius: 9, borderWidth: 1.5, height: 18, width: 18 },
   radioOn: { backgroundColor: c.accent, borderRadius: 9, height: 18, width: 18 },
-
-  // ── search block ──
-  searchBlock: { gap: sp[2] },
-  searchInputRow: {
-    alignItems: "center",
-    backgroundColor: c.surface,
-    borderColor: c.accent,
-    borderRadius: r.md,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: sp[2],
-    paddingHorizontal: sp[4],
-    paddingVertical: sp[3],
-  },
-  searchInput: { color: c.ink, flex: 1, fontSize: 15 },
-  emptySearch: { color: c.muted, fontSize: 13, paddingVertical: sp[2], textAlign: "center" },
-  bookResultRow: {
-    alignItems: "center",
-    backgroundColor: c.surface,
-    borderColor: c.border,
-    borderRadius: r.md,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: sp[3],
-    padding: sp[4],
-  },
-  bookResultSelected: { borderColor: c.accent },
-  bookCover: { borderRadius: r.sm, height: 52, width: 36 },
 
   // ── manual block ──
   manualBlock: { gap: sp[2] },

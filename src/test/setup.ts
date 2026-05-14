@@ -21,6 +21,27 @@ jest.mock("@expo/vector-icons", () => {
   };
 });
 
+jest.mock("@gorhom/bottom-sheet", () => {
+  const React = jest.requireActual<typeof import("react")>("react");
+  const { View } = jest.requireActual<typeof import("react-native")>("react-native");
+
+  const BottomSheet = React.forwardRef(
+    ({ children }: { children?: ReactNode }, _ref) => React.createElement(View, null, children),
+  );
+  const passthrough = ({ children }: { children?: ReactNode }) =>
+    React.createElement(View, null, children);
+
+  return {
+    __esModule: true,
+    default: BottomSheet,
+    BottomSheetView: passthrough,
+    BottomSheetScrollView: passthrough,
+    BottomSheetBackdrop: () => null,
+    BottomSheetModal: BottomSheet,
+    BottomSheetModalProvider: passthrough,
+  };
+});
+
 jest.mock("react-native-safe-area-context", () => {
   const React = jest.requireActual<typeof import("react")>("react");
   const { View } = jest.requireActual<typeof import("react-native")>("react-native");

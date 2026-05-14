@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { useEffect, useState } from "react";
-import "react-native-gesture-handler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Stack, type ErrorBoundaryProps } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { View } from "react-native";
@@ -18,6 +19,7 @@ import {
 import { DatabaseProvider } from "../src/lib/db";
 import { ErrorState } from "../src/ui/ErrorState";
 import { OnboardingScreen } from "../src/features/onboarding/OnboardingScreen";
+import { OnboardingGateProvider } from "../src/features/onboarding/onboarding-gate";
 import { hasCompletedOnboarding } from "../src/features/onboarding/onboarding-storage";
 import { tokens } from "../src/ui/tokens";
 
@@ -63,29 +65,42 @@ export default function RootLayout(): ReactElement {
 
   // DatabaseProvider always mounts so onboarding can read/write books
   return (
-    <SafeAreaProvider>
-      <DatabaseProvider>
-        {!onboarded ? (
-          <OnboardingScreen onComplete={() => setOnboarded(true)} />
-        ) : (
-          <>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="(modals)/log-book" options={{ presentation: "modal" }} />
-              <Stack.Screen name="book/[id]" />
-              <Stack.Screen name="shelves/[id]" />
-              <Stack.Screen name="settings" />
-              <Stack.Screen name="notifications" />
-              <Stack.Screen name="capture/index" />
-              <Stack.Screen name="capture/barcode" />
-              <Stack.Screen name="capture/page" />
-              <Stack.Screen name="share/[cardType]" />
-            </Stack>
-            <StatusBar style="light" />
-          </>
-        )}
-      </DatabaseProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <BottomSheetModalProvider>
+          <DatabaseProvider>
+            <OnboardingGateProvider setOnboarded={setOnboarded}>
+              {!onboarded ? (
+                <OnboardingScreen onComplete={() => setOnboarded(true)} />
+              ) : (
+                <>
+                  <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="(tabs)" />
+                    <Stack.Screen
+                      name="(modals)/log-book"
+                      options={{
+                        animation: "fade",
+                        contentStyle: { backgroundColor: "transparent" },
+                        presentation: "transparentModal",
+                      }}
+                    />
+                    <Stack.Screen name="book/[id]" />
+                    <Stack.Screen name="shelves/[id]" />
+                    <Stack.Screen name="settings" />
+                    <Stack.Screen name="notifications" />
+                    <Stack.Screen name="capture/index" />
+                    <Stack.Screen name="capture/barcode" />
+                    <Stack.Screen name="capture/page" />
+                    <Stack.Screen name="share/[cardType]" />
+                  </Stack>
+                  <StatusBar style="light" />
+                </>
+              )}
+            </OnboardingGateProvider>
+          </DatabaseProvider>
+        </BottomSheetModalProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 

@@ -16,8 +16,7 @@ export const buildDashboardData = (books: readonly Book[]): DashboardData => {
       { detail: "days alive", label: "continuity", value: "84" }
     ],
     yearlyStats: [
-      { detail: "books this year", label: "books", value: String(finishedBooks.length) },
-      { detail: "reading streak", label: "streak", value: "12 d" },
+      { detail: "books finished", label: "books", value: String(finishedBooks.length) },
       { detail: "ink density", label: "pages", value: totalPages.toLocaleString("en-US") },
       { detail: "changed me", label: "changed", value: String(changedCount) }
     ] satisfies StatValue[]

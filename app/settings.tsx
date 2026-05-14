@@ -6,6 +6,8 @@ import * as DocumentPicker from "expo-document-picker";
 import { useSQLiteContext } from "expo-sqlite";
 
 import { importLibraryFromFileAsync, shareLibraryExportAsync } from "../src/features/import-export";
+import { useOnboardingGate } from "../src/features/onboarding/onboarding-gate";
+import { resetOnboarding } from "../src/features/onboarding/onboarding-storage";
 import { SettingsScreen, type SettingsAction } from "../src/features/settings/SettingsScreen";
 import { useAppSettings } from "../src/features/settings/hooks/use-app-settings";
 import { eraseLocalLibraryData } from "../src/features/settings/repositories/local-data-repository";
@@ -14,6 +16,7 @@ export default function SettingsRoute(): ReactElement {
   const db = useSQLiteContext();
   const router = useRouter();
   const settings = useAppSettings();
+  const { setOnboarded } = useOnboardingGate();
   const [busyAction, setBusyAction] = useState<SettingsAction | undefined>();
   const [message, setMessage] = useState<string | undefined>();
 
@@ -85,6 +88,18 @@ export default function SettingsRoute(): ReactElement {
     );
   };
 
+  const handleResetOnboarding = async (): Promise<void> => {
+    // Send the Stack back to root before unmounting it, otherwise expo-router
+    // remembers /settings and lands the user back here when onboarding finishes.
+    router.replace("/");
+    try {
+      await resetOnboarding();
+    } catch {
+      // proceed even if the prefs write fails — the gate flip is what brings us back
+    }
+    setOnboarded(false);
+  };
+
   return (
     <SettingsScreen
       busyAction={busyAction}
@@ -97,6 +112,7 @@ export default function SettingsRoute(): ReactElement {
       onOpenWrapped={() =>
         router.push({ pathname: "/share/[cardType]", params: { cardType: "passport" } })
       }
+      onResetOnboarding={() => void handleResetOnboarding()}
       onToggleDailyShareStreak={(enabled) =>
         void settings.setBoolean("dailyShareStreakEnabled", enabled)
       }

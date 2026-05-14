@@ -6,6 +6,7 @@ const optionalText = z.string().trim().min(1).optional();
 
 export const createBookSchema = z.object({
   author: z.string().trim().min(1, "Author is required"),
+  coverPath: optionalText,
   genre: optionalText,
   isbn: optionalText,
   source: optionalText,

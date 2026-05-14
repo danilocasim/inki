@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
-import { figmaShelves, shelfFilters, type BookStatus } from "../dashboard/fixtures";
+import { figmaBooks, figmaShelves, shelfFilters, type BookStatus } from "../dashboard/fixtures";
 import type { Shelf } from "./types";
 import { Button } from "../../ui/Button";
 import { Card } from "../../ui/Card";
@@ -12,6 +12,10 @@ import { Screen } from "../../ui/Screen";
 import { SegmentedControl } from "../../ui/SegmentedControl";
 import { Text } from "../../ui/Text";
 import { tokens } from "../../ui/tokens";
+
+interface ShelfCardModel extends Shelf {
+  spineColors: readonly string[];
+}
 
 export interface ShelfOverviewScreenProps {
   createError?: string | undefined;
@@ -35,14 +39,22 @@ export function ShelfOverviewScreen({
   const [creating, setCreating] = useState(false);
   const [query, setQuery] = useState("");
   const [shelfName, setShelfName] = useState("");
-  const allShelves = shelves ?? figmaShelves.map((shelf) => ({
-    accent: shelf.accent,
-    count: shelf.bookIds.length,
-    id: shelf.id,
-    kind: "custom" as const,
-    subtitle: shelf.subtitle,
-    title: shelf.title
-  }));
+  const allShelves: readonly ShelfCardModel[] = shelves
+    ? shelves.map((shelf) => ({
+        ...shelf,
+        spineColors: shelf.books?.map((book) => book.palette.cover) ?? [],
+      }))
+    : figmaShelves.map((shelf) => ({
+        accent: shelf.accent,
+        count: shelf.bookIds.length,
+        id: shelf.id,
+        kind: "custom" as const,
+        spineColors: shelf.bookIds
+          .map((bookId) => figmaBooks.find((book) => book.id === bookId)?.palette.cover)
+          .filter((color): color is string => Boolean(color)),
+        subtitle: shelf.subtitle,
+        title: shelf.title,
+      }));
   const normalizedQuery = query.trim().toLowerCase();
   const visibleShelves = normalizedQuery.length === 0
     ? allShelves
@@ -123,22 +135,7 @@ export function ShelfOverviewScreen({
 
       <View style={styles.shelfList}>
         {visibleShelves.map((shelf) => (
-          <Pressable
-            accessibilityLabel={`Open ${shelf.title}`}
-            accessibilityRole="button"
-            key={shelf.id}
-            onPress={() => onOpenShelf(shelf.id)}
-          >
-            <Card style={styles.shelfCard} variant="ink">
-              <ShelfSwatch color={shelf.accent} />
-              <View style={styles.shelfBody}>
-                <Text variant="sectionTitle">{shelf.title}</Text>
-                <Text tone="muted" variant="bodyStrong">{shelf.count} books</Text>
-                {shelf.kind === "custom" ? <Text tone="accent" variant="caption">private</Text> : null}
-              </View>
-              <Feather color={tokens.color.muted} name="chevron-right" size={22} />
-            </Card>
-          </Pressable>
+          <ShelfCard key={shelf.id} onOpen={onOpenShelf} shelf={shelf} />
         ))}
       </View>
 
@@ -165,13 +162,50 @@ export function ShelfOverviewScreen({
 const noop = (): void => undefined;
 const noopCreateShelf = async (_name: string): Promise<void> => undefined;
 
-function ShelfSwatch({ color }: { color: string }): ReactElement {
+function ShelfCard({
+  onOpen,
+  shelf,
+}: {
+  onOpen: (shelfId: string) => void;
+  shelf: ShelfCardModel;
+}): ReactElement {
+  const previewSpines = shelf.spineColors.length > 0
+    ? shelf.spineColors.slice(0, 6)
+    : [shelf.accent];
+
   return (
-    <View style={styles.swatchStack}>
-      <View style={[styles.swatch, { backgroundColor: color }]} />
-      <View style={[styles.swatch, styles.swatchOverlap, { backgroundColor: tokens.color.leaf }]} />
-      <View style={[styles.swatch, styles.swatchOverlap, { backgroundColor: tokens.color.gold }]} />
-    </View>
+    <Pressable
+      accessibilityLabel={`Open ${shelf.title}`}
+      accessibilityRole="button"
+      onPress={() => onOpen(shelf.id)}
+    >
+      <Card style={styles.shelfCard} variant="ink">
+        <View style={[styles.shelfAccentBar, { backgroundColor: shelf.accent }]} />
+        <View style={styles.shelfBody}>
+          <View style={styles.shelfHeader}>
+            <Text tone="muted" variant="eyebrow">
+              {`${shelf.count} BOOKS`}
+            </Text>
+            {shelf.kind === "custom" ? (
+              <Text tone="accent" variant="eyebrow">PRIVATE</Text>
+            ) : null}
+          </View>
+          <Text variant="sectionTitle">{shelf.title}</Text>
+          <Text tone="muted" variant="caption">
+            {shelf.subtitle}
+          </Text>
+          <View style={styles.spineRow}>
+            {previewSpines.map((color, index) => (
+              <View
+                key={`${shelf.id}-spine-${index}`}
+                style={[styles.spine, { backgroundColor: color }]}
+              />
+            ))}
+          </View>
+        </View>
+        <Feather color={tokens.color.muted} name="chevron-right" size={22} />
+      </Card>
+    </Pressable>
   );
 }
 
@@ -250,20 +284,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between"
   },
-  shelfAccent: {
+  shelfAccentBar: {
     alignSelf: "stretch",
     borderRadius: tokens.radius.pill,
-    width: 10
+    width: 4
   },
   shelfBody: {
     flex: 1,
-    gap: tokens.space[1]
+    gap: tokens.space[2]
   },
   shelfCard: {
+    alignItems: "stretch",
+    flexDirection: "row",
+    gap: tokens.space[4],
+    minHeight: 138
+  },
+  shelfHeader: {
     alignItems: "center",
     flexDirection: "row",
-    gap: tokens.space[5],
-    minHeight: 116
+    gap: tokens.space[2],
+    justifyContent: "space-between"
   },
   shelfList: {
     gap: tokens.space[3]
@@ -275,15 +315,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space[4],
     paddingVertical: tokens.space[2]
   },
-  swatch: {
-    borderRadius: tokens.radius.xs,
-    height: 70,
-    width: 44
+  spine: {
+    borderRadius: 2,
+    flex: 1,
+    height: 38,
+    maxWidth: 14,
+    minWidth: 6
   },
-  swatchOverlap: {
-    marginLeft: -4
-  },
-  swatchStack: {
-    flexDirection: "row"
+  spineRow: {
+    flexDirection: "row",
+    gap: 4,
+    marginTop: tokens.space[2]
   }
 });

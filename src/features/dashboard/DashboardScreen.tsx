@@ -1,11 +1,12 @@
 import type { ReactElement } from "react";
 import { useState } from "react";
-import { Pressable, StyleSheet, View, type ViewStyle } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Image, Pressable, StyleSheet, View } from "react-native";
+
+const pulseMinImg = require("../../assets/heatmap/pulse_min.png");
+const pulseMaxImg = require("../../assets/heatmap/pulse_max.png");
 
 import type { Book, BookStatus } from "../books/types";
 import { bookStatusOptions } from "../books/book-status";
-import { figmaBooks } from "./fixtures";
 import { buildDashboardData } from "./services/stats-service";
 import type { DashboardData } from "./types";
 import { Card } from "../../ui/Card";
@@ -21,7 +22,6 @@ export interface DashboardScreenProps {
   data?: DashboardData | undefined;
   loading?: boolean;
   onAddBook?: () => void;
-  onOpenCapture?: () => void;
   onOpenNotifications?: () => void;
   onOpenBook?: (bookId: string) => void;
 }
@@ -31,17 +31,14 @@ export function DashboardScreen({
   data,
   loading = false,
   onAddBook = noop,
-  onOpenCapture = noop,
   onOpenNotifications = noop,
   onOpenBook = noopOpenBook,
 }: DashboardScreenProps): ReactElement {
   const [activeTab, setActiveTab] = useState<BookStatus>("reading");
-  const fallbackData = buildDashboardData(figmaBooks.map(mapFixtureBook));
-  const dashboard = data ?? fallbackData;
+  const dashboard = data ?? emptyDashboardData;
   const filteredBooks = dashboard.books.filter((book) => book.status === activeTab);
-  const visibleBooks = orderBooksForStack(
-    filteredBooks.length > 0 ? filteredBooks : dashboard.activeBooks,
-  ).slice(0, 6);
+  const visibleBooks = orderBooksForStack(filteredBooks).slice(0, 6);
+  const hasBooks = dashboard.books.length > 0;
 
   return (
     <Screen contentStyle={styles.screenContent}>
@@ -53,7 +50,6 @@ export function DashboardScreen({
           </Text>
         </View>
         <View style={styles.topActions}>
-          <IconButton label="Open capture" name="camera" onPress={onOpenCapture} size={18} />
           <IconButton
             label="Open notifications"
             name="bell"
@@ -107,43 +103,22 @@ export function DashboardScreen({
       </View>
 
       <PulseCard />
-      <ContinuityCard />
 
-      <View style={styles.velocityHeader}>
-        <Text variant="hero">Velocity</Text>
-        <Text tone="muted" variant="eyebrow">
-          90 DAY ROLLING
-        </Text>
-      </View>
-      <View style={styles.statGrid}>
-        <StatTile detail="+12%" label="pages / min" value="1.4" />
-        {dashboard.yearlyStats.map((stat) => (
-          <StatTile detail={stat.detail} key={stat.detail} label={stat.label} value={stat.value} />
-        ))}
-        <StatTile detail="total bookmarks" label="bookmarks" value="142" />
-      </View>
-
-      <Card style={styles.postReadCard} variant="ink">
-        <Text tone="muted" variant="eyebrow">
-          POST-READ · 12 MAR 2026
-        </Text>
-        <Text variant="sectionTitle">What stayed with you?</Text>
-        <Text style={styles.quoteText}>
-          {'"The house was not the labyrinth. The labyrinth was the kindness."'}
-        </Text>
-        <View style={styles.postReadBook}>
-          <View style={styles.postReadCover} />
-          <View style={styles.postReadCopy}>
-            <Text variant="caption">Piranesi</Text>
-            <Text tone="muted" variant="caption">
-              Susanna Clarke
+      {hasBooks ? (
+        <>
+          <View style={styles.velocityHeader}>
+            <Text variant="hero">Your year</Text>
+            <Text tone="muted" variant="eyebrow">
+              FROM YOUR LIBRARY
             </Text>
           </View>
-          <Text tone="accent" variant="caption">
-            inki
-          </Text>
-        </View>
-      </Card>
+          <View style={styles.statGrid}>
+            {dashboard.yearlyStats.map((stat) => (
+              <StatTile detail={stat.detail} key={stat.label} label={stat.label} value={stat.value} />
+            ))}
+          </View>
+        </>
+      ) : null}
 
       <View style={styles.localFooter}>
         <Text tone="muted">No feeds. No followers.</Text>
@@ -155,20 +130,7 @@ export function DashboardScreen({
 
 const noop = (): void => undefined;
 const noopOpenBook = (_bookId: string): void => undefined;
-
-const mapFixtureBook = (book: (typeof figmaBooks)[number]): Book => ({
-  author: book.author,
-  currentPage: book.progress ?? 0,
-  genre: book.genre,
-  id: book.id,
-  isChangedYou: false,
-  palette: book.palette,
-  progress: book.progress,
-  status: book.status,
-  title: book.title,
-  totalPages: totalPagesByBookId[book.id],
-  year: book.year,
-});
+const emptyDashboardData: DashboardData = buildDashboardData([]);
 
 function StackBook({
   book,
@@ -188,12 +150,23 @@ function StackBook({
       style={styles.bookTile}
     >
       <View style={[styles.bookCover, { backgroundColor: book.palette.cover }]}>
-        <Text numberOfLines={2} style={styles.bookTitle} tone="inverse" variant="caption">
-          {book.title}
-        </Text>
-        <Text numberOfLines={2} style={styles.bookAuthor} tone="inverse" variant="eyebrow">
-          {book.author}
-        </Text>
+        {book.coverPath ? (
+          <Image
+            accessibilityIgnoresInvertColors
+            resizeMode="cover"
+            source={{ uri: book.coverPath }}
+            style={StyleSheet.absoluteFill}
+          />
+        ) : (
+          <>
+            <Text numberOfLines={2} style={styles.bookTitle} tone="inverse" variant="caption">
+              {book.title}
+            </Text>
+            <Text numberOfLines={2} style={styles.bookAuthor} tone="inverse" variant="eyebrow">
+              {book.author}
+            </Text>
+          </>
+        )}
       </View>
       <View style={styles.progressTrack}>
         <View style={[styles.progressFill, { width: `${Math.max(3, progress)}%` }]} />
@@ -216,22 +189,14 @@ function PulseCard(): ReactElement {
       <View style={styles.pulseHeader}>
         <View style={styles.pulseTitleGroup}>
           <Text variant="sectionTitle">The Pulse</Text>
-          <Text tone="muted">Last 16 weeks · reading consistency</Text>
-        </View>
-        <View style={styles.pulseMetric}>
-          <Text tone="accent" variant="bodyStrong">
-            84
-          </Text>
-          <Text tone="muted" variant="caption">
-            days
-          </Text>
+          <Text tone="muted">This month · reading consistency</Text>
         </View>
       </View>
       <View style={styles.heatmapGrid}>
-        {heatmapWeeks.map((week, weekIndex) => (
-          <View key={`week-${weekIndex}`} style={styles.heatmapWeek}>
-            {week.map((level, dayIndex) => (
-              <HeatCell key={`cell-${weekIndex}-${dayIndex}`} level={level} />
+        {heatmapRows.map((row, rowIndex) => (
+          <View key={`row-${rowIndex}`} style={styles.heatmapRow}>
+            {row.map((level, colIndex) => (
+              <HeatCell key={`cell-${rowIndex}-${colIndex}`} level={level} />
             ))}
           </View>
         ))}
@@ -240,69 +205,48 @@ function PulseCard(): ReactElement {
         <Text tone="muted" variant="caption">
           less
         </Text>
-        {heatLevels.map((level) => (
-          <View key={level} style={[styles.legendCell, heatCellStyles[level]]} />
-        ))}
+        {heatLevels.map((level) => {
+          const source = cellImage(level);
+          return source === undefined ? (
+            <View key={level} style={styles.legendCell} />
+          ) : (
+            <Image
+              accessibilityIgnoresInvertColors
+              key={level}
+              resizeMode="cover"
+              source={source}
+              style={styles.legendCell}
+            />
+          );
+        })}
         <Text tone="muted" variant="caption">
           more
         </Text>
-      </View>
-      <View style={styles.bookmarkCard}>
-        <View style={styles.bookmarkMark}>
-          <Feather color={tokens.color.accent} name="bookmark" size={20} />
-        </View>
-        <View>
-          <Text tone="muted" variant="eyebrow">
-            BOOKMARKS THIS WEEK
-          </Text>
-          <Text>
-            <Text tone="accent" variant="sectionTitle">
-              3
-            </Text>{" "}
-            · 7 day streak
-          </Text>
-        </View>
       </View>
     </Card>
   );
 }
 
 function HeatCell({ level }: { level: HeatLevel }): ReactElement {
-  return <View style={[styles.heatCell, heatCellStyles[level]]} />;
-}
-
-function ContinuityCard(): ReactElement {
+  const source = cellImage(level);
+  if (source === undefined) {
+    return <View style={styles.heatCell} />;
+  }
   return (
-    <Card style={styles.continuityCard} variant="elevated">
-      <View style={styles.ring}>
-        <Text tone="accent" variant="sectionTitle">
-          78
-        </Text>
-        <Text tone="muted" variant="caption">
-          / 100
-        </Text>
-      </View>
-      <View style={styles.continuityCopy}>
-        <Text variant="sectionTitle">Continuity</Text>
-        <Text tone="muted">{"You're reading steadily. A long game, well played."}</Text>
-        <View style={styles.continuityMeta}>
-          <Text tone="accent" variant="caption">
-            42
-          </Text>
-          <Text tone="muted" variant="caption">
-            pg today
-          </Text>
-          <Text tone="accent" variant="caption">
-            50
-          </Text>
-          <Text tone="muted" variant="caption">
-            goal
-          </Text>
-        </View>
-      </View>
-    </Card>
+    <Image
+      accessibilityIgnoresInvertColors
+      resizeMode="cover"
+      source={source}
+      style={styles.heatCell}
+    />
   );
 }
+
+const cellImage = (level: HeatLevel) => {
+  if (level === 0) return undefined;
+  if (level <= 2) return pulseMinImg;
+  return pulseMaxImg;
+};
 
 const progressFromPages = (book: Book): number => {
   if (!book.totalPages || book.totalPages <= 0) {
@@ -313,42 +257,35 @@ const progressFromPages = (book: Book): number => {
 };
 
 const getBookPages = (book: Book): string => {
-  const totalPages = book.totalPages ?? totalPagesByBookId[book.id];
-
-  if (!totalPages) {
+  if (!book.totalPages) {
     return book.progress === undefined ? "not yet" : `${book.progress}%`;
   }
 
-  const currentPage =
-    book.currentPage > 0 ? book.currentPage : Math.round((totalPages * (book.progress ?? 0)) / 100);
-
-  return `${currentPage}/${totalPages}`;
-};
-
-const totalPagesByBookId: Record<string, number> = {
-  bewilderment: 278,
-  crossroads: 580,
-  klara: 303,
-  overstory: 502,
-  piranesi: 248,
-  tomb: 739,
+  return `${book.currentPage}/${book.totalPages}`;
 };
 
 type HeatLevel = 0 | 1 | 2 | 3 | 4;
 
 const heatLevels: readonly HeatLevel[] = [0, 1, 2, 3, 4];
 
-const heatmapLevels: HeatLevel[] = Array.from({ length: 112 }, (_, index) => {
+const HEATMAP_ROWS = 3;
+const HEATMAP_COLS = 10;
+
+const deriveLevel = (index: number): HeatLevel => {
   if (index % 11 === 0 || index % 13 === 0) {
     return 0;
   }
+  return ((index * 7) % 5) as HeatLevel;
+};
 
-  return ((index * 7) % 5) as 0 | 1 | 2 | 3 | 4;
-});
+const buildHeatmapRows = (): HeatLevel[][] =>
+  Array.from({ length: HEATMAP_ROWS }, (_, rowIndex) =>
+    Array.from({ length: HEATMAP_COLS }, (_, colIndex) =>
+      deriveLevel(rowIndex * HEATMAP_COLS + colIndex + 1),
+    ),
+  );
 
-const heatmapWeeks = Array.from({ length: 16 }, (_, weekIndex) =>
-  heatmapLevels.slice(weekIndex * 7, weekIndex * 7 + 7),
-);
+const heatmapRows = buildHeatmapRows();
 
 const statusOrder: Record<BookStatus, number> = {
   reading: 0,
@@ -375,33 +312,7 @@ const orderBooksForStack = (books: readonly Book[]): Book[] =>
     return left.title.localeCompare(right.title);
   });
 
-const heatCellStyles: Record<HeatLevel, ViewStyle> = {
-  0: { backgroundColor: "#181818" },
-  1: { backgroundColor: "#334153" },
-  2: { backgroundColor: "#51647B" },
-  3: { backgroundColor: "#7691B2" },
-  4: { backgroundColor: tokens.color.accent },
-};
-
 const styles = StyleSheet.create({
-  bookmarkCard: {
-    alignItems: "center",
-    backgroundColor: tokens.color.surfaceMuted,
-    borderColor: tokens.color.border,
-    borderRadius: tokens.radius.lg,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: tokens.space[3],
-    padding: tokens.space[4],
-  },
-  bookmarkMark: {
-    alignItems: "center",
-    backgroundColor: tokens.color.surface,
-    borderRadius: tokens.radius.pill,
-    height: 44,
-    justifyContent: "center",
-    width: 44,
-  },
   bookAuthor: {
     opacity: 0.72,
     textTransform: "uppercase",
@@ -411,6 +322,7 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.sm,
     justifyContent: "space-between",
     minHeight: 150,
+    overflow: "hidden",
     padding: tokens.space[3],
   },
   bookGrid: {
@@ -430,19 +342,6 @@ const styles = StyleSheet.create({
   brandLockup: {
     gap: 2,
   },
-  continuityCard: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: tokens.space[5],
-  },
-  continuityCopy: {
-    flex: 1,
-    gap: tokens.space[2],
-  },
-  continuityMeta: {
-    flexDirection: "row",
-    gap: tokens.space[2],
-  },
   filterRow: {
     alignItems: "flex-start",
     flexDirection: "row",
@@ -454,22 +353,27 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   heatCell: {
-    borderRadius: 2,
-    height: 10,
-    width: 10,
+    borderColor: tokens.color.white,
+    borderRadius: 4,
+    borderWidth: 1,
+    flex: 1,
+    height: undefined,
+    aspectRatio: 1,
   },
   heatmapGrid: {
-    flexDirection: "row",
+    alignSelf: "stretch",
     gap: 5,
-    justifyContent: "space-between",
   },
-  heatmapWeek: {
+  heatmapRow: {
+    flexDirection: "row",
     gap: 5,
   },
   legendCell: {
-    borderRadius: 2,
-    height: 12,
-    width: 12,
+    borderColor: tokens.color.white,
+    borderRadius: 3,
+    borderWidth: 1,
+    height: 16,
+    width: 16,
   },
   localFooter: {
     alignItems: "center",
@@ -479,26 +383,6 @@ const styles = StyleSheet.create({
   pageRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-  },
-  postReadBook: {
-    alignItems: "center",
-    borderTopColor: tokens.color.border,
-    borderTopWidth: 1,
-    flexDirection: "row",
-    gap: tokens.space[3],
-    paddingTop: tokens.space[4],
-  },
-  postReadCard: {
-    gap: tokens.space[3],
-  },
-  postReadCopy: {
-    flex: 1,
-  },
-  postReadCover: {
-    backgroundColor: "#3A4A5B",
-    borderRadius: tokens.radius.xs,
-    height: 42,
-    width: 32,
   },
   progressFill: {
     backgroundColor: tokens.color.accent,
@@ -528,36 +412,9 @@ const styles = StyleSheet.create({
     gap: tokens.space[2],
     paddingTop: tokens.space[4],
   },
-  pulseMetric: {
-    alignItems: "center",
-    backgroundColor: tokens.color.surfaceMuted,
-    borderColor: tokens.color.border,
-    borderRadius: tokens.radius.md,
-    borderWidth: 1,
-    minWidth: 62,
-    paddingHorizontal: tokens.space[3],
-    paddingVertical: tokens.space[2],
-  },
   pulseTitleGroup: {
     flex: 1,
     gap: tokens.space[1],
-  },
-  quoteText: {
-    borderLeftColor: tokens.color.accent,
-    borderLeftWidth: 2,
-    fontSize: 17,
-    lineHeight: 28,
-    paddingLeft: tokens.space[3],
-  },
-  ring: {
-    alignItems: "center",
-    borderColor: tokens.color.accent,
-    borderLeftColor: tokens.color.border,
-    borderRadius: 46,
-    borderWidth: 4,
-    height: 92,
-    justifyContent: "center",
-    width: 92,
   },
   screenContent: {
     paddingBottom: tokens.space[12],

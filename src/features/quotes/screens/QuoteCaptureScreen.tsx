@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, TextInput } from "react-native";
+import { Image, StyleSheet, TextInput, View } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
 
 import { listBooks } from "../../books/repositories/books-repository";
@@ -15,10 +15,14 @@ import { Text } from "../../../ui/Text";
 import { tokens } from "../../../ui/tokens";
 
 export interface QuoteCaptureScreenProps {
+  capturedPhotoUri?: string | undefined;
   onDone?: () => void;
 }
 
-export function QuoteCaptureScreen({ onDone = noop }: QuoteCaptureScreenProps): ReactElement {
+export function QuoteCaptureScreen({
+  capturedPhotoUri,
+  onDone = noop,
+}: QuoteCaptureScreenProps): ReactElement {
   const db = useSQLiteContext();
   const [books, setBooks] = useState<Book[]>([]);
   const [bookId, setBookId] = useState<string | undefined>();
@@ -96,6 +100,20 @@ export function QuoteCaptureScreen({ onDone = noop }: QuoteCaptureScreenProps): 
 
       <Card style={styles.section} variant="ink">
         <Text tone="muted" variant="eyebrow">QUOTE</Text>
+        {capturedPhotoUri ? (
+          <View style={styles.photoBlock}>
+            <Image
+              accessibilityIgnoresInvertColors
+              accessibilityLabel="Captured page photo"
+              resizeMode="cover"
+              source={{ uri: capturedPhotoUri }}
+              style={styles.photo}
+            />
+            <Text tone="muted" variant="caption">
+              Type the line you want to save from the photo above.
+            </Text>
+          </View>
+        ) : null}
         <TextInput
           multiline
           onChangeText={(value) => {
@@ -154,6 +172,15 @@ const styles = StyleSheet.create({
     minHeight: 52,
     paddingHorizontal: tokens.space[4],
     paddingVertical: tokens.space[3]
+  },
+  photo: {
+    backgroundColor: tokens.color.black,
+    borderRadius: tokens.radius.md,
+    height: 200,
+    width: "100%"
+  },
+  photoBlock: {
+    gap: tokens.space[2]
   },
   quoteInput: {
     minHeight: 160

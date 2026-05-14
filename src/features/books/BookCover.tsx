@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 
 import { Text } from "../../ui/Text";
 import { tokens } from "../../ui/tokens";
@@ -14,6 +14,7 @@ export interface BookCoverProps {
 
 export interface BookCoverBook {
   author: string;
+  coverPath?: string | undefined;
   palette: {
     cover: string;
     spine: string;
@@ -21,15 +22,28 @@ export interface BookCoverBook {
   title: string;
 }
 
-/** Static cover primitive for the Figma fixture pass before image storage exists. */
+/** Cover primitive — uses the user's uploaded photo when present, palette swatch otherwise. */
 export function BookCover({ book, showAuthor = true, size = "md" }: BookCoverProps): ReactElement {
+  const hasPhoto = typeof book.coverPath === "string" && book.coverPath !== "";
+
   return (
     <View style={styles.container}>
       <View style={[styles.cover, coverSizes[size], { backgroundColor: book.palette.cover }]}>
-        <View style={[styles.spine, { backgroundColor: book.palette.spine }]} />
-        <Text numberOfLines={3} style={styles.coverTitle} tone="inverse" variant="caption">
-          {book.title}
-        </Text>
+        {hasPhoto ? (
+          <Image
+            accessibilityIgnoresInvertColors
+            resizeMode="cover"
+            source={{ uri: book.coverPath }}
+            style={StyleSheet.absoluteFill}
+          />
+        ) : (
+          <>
+            <View style={[styles.spine, { backgroundColor: book.palette.spine }]} />
+            <Text numberOfLines={3} style={styles.coverTitle} tone="inverse" variant="caption">
+              {book.title}
+            </Text>
+          </>
+        )}
       </View>
       {showAuthor ? (
         <View style={[styles.meta, metaWidths[size]]}>

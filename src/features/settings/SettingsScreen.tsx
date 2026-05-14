@@ -17,6 +17,7 @@ export interface SettingsScreenProps {
   onImportData?: () => void;
   onOpenNotifications?: () => void;
   onOpenWrapped?: () => void;
+  onResetOnboarding?: () => void;
   onToggleDailyShareStreak?: (enabled: boolean) => void;
   onToggleReadReminder?: (enabled: boolean) => void;
   readReminderEnabled?: boolean;
@@ -34,6 +35,7 @@ export function SettingsScreen({
   onImportData = noop,
   onOpenNotifications = noop,
   onOpenWrapped = noop,
+  onResetOnboarding = noop,
   onToggleDailyShareStreak = noopBoolean,
   onToggleReadReminder = noopBoolean,
   readReminderEnabled = false,
@@ -101,6 +103,18 @@ export function SettingsScreen({
           icon="trash-2"
           label="erase all data"
           onPress={onEraseAllData}
+        />
+      </Card>
+
+      <Card style={styles.section} variant="ink">
+        <Text tone="muted" variant="eyebrow">
+          DEVELOPER
+        </Text>
+        <SettingsRow
+          detail="replay onboarding flow"
+          icon="refresh-ccw"
+          label="reset onboarding"
+          onPress={onResetOnboarding}
         />
       </Card>
 

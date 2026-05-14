@@ -21,7 +21,6 @@ export default function HomeRoute(): ReactElement {
       data={data}
       loading={loading}
       onAddBook={() => router.push("/(modals)/log-book")}
-      onOpenCapture={() => router.push("/capture/index")}
       onOpenNotifications={() => router.push("/notifications")}
       onOpenBook={(bookId) => router.push({ pathname: "/book/[id]", params: { id: bookId } })}
     />

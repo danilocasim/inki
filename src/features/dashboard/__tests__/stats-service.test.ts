@@ -9,7 +9,7 @@ describe("dashboard stats service", () => {
     ]);
 
     expect(data.activeBooks).toHaveLength(1);
-    expect(data.yearlyStats.find((stat) => stat.detail === "books this year")?.value).toBe("1");
+    expect(data.yearlyStats.find((stat) => stat.detail === "books finished")?.value).toBe("1");
     expect(data.yearlyStats.find((stat) => stat.detail === "changed me")?.value).toBe("1");
   });
 });
