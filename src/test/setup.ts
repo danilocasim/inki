@@ -7,7 +7,9 @@ type SafeAreaProviderProps = {
 };
 
 type SafeAreaViewProps = SafeAreaProviderProps & {
+  edges?: readonly string[];
   style?: StyleProp<ViewStyle>;
+  testID?: string;
 };
 
 jest.mock("react-native-reanimated", () => jest.requireActual("react-native-reanimated/mock"));
@@ -17,7 +19,7 @@ jest.mock("@expo/vector-icons", () => {
   const { Text } = jest.requireActual<typeof import("react-native")>("react-native");
 
   return {
-    Feather: ({ name }: { name: string }) => React.createElement(Text, null, name)
+    Feather: ({ name }: { name: string }) => React.createElement(Text, null, name),
   };
 });
 
@@ -33,11 +35,12 @@ jest.mock("@gorhom/bottom-sheet", () => {
   const React = jest.requireActual<typeof import("react")>("react");
   const { View } = jest.requireActual<typeof import("react-native")>("react-native");
 
-  const BottomSheet = React.forwardRef(
-    ({ children }: { children?: ReactNode }, _ref) => React.createElement(View, null, children),
+  const BottomSheet = React.forwardRef(({ children, ...props }: { children?: ReactNode }, _ref) =>
+    React.createElement(View, props, children),
   );
-  const passthrough = ({ children }: { children?: ReactNode }) =>
-    React.createElement(View, null, children);
+  BottomSheet.displayName = "MockBottomSheet";
+  const passthrough = ({ children, ...props }: { children?: ReactNode }) =>
+    React.createElement(View, props, children);
 
   return {
     __esModule: true,
@@ -55,14 +58,15 @@ jest.mock("react-native-safe-area-context", () => {
   const { View } = jest.requireActual<typeof import("react-native")>("react-native");
 
   return {
-    SafeAreaProvider: ({ children }: SafeAreaProviderProps) => React.createElement(View, null, children),
-    SafeAreaView: ({ children, style }: SafeAreaViewProps) =>
-      React.createElement(View, { style }, children),
+    SafeAreaProvider: ({ children }: SafeAreaProviderProps) =>
+      React.createElement(View, null, children),
+    SafeAreaView: ({ children, ...props }: SafeAreaViewProps) =>
+      React.createElement(View, props, children),
     initialWindowMetrics: {
       frame: { height: 852, width: 393, x: 0, y: 0 },
-      insets: { bottom: 0, left: 0, right: 0, top: 0 }
+      insets: { bottom: 0, left: 0, right: 0, top: 0 },
     },
     useSafeAreaFrame: () => ({ height: 852, width: 393, x: 0, y: 0 }),
-    useSafeAreaInsets: () => ({ bottom: 0, left: 0, right: 0, top: 0 })
+    useSafeAreaInsets: () => ({ bottom: 0, left: 0, right: 0, top: 0 }),
   };
 });

@@ -62,4 +62,20 @@ describe("AddBookSheet", () => {
     });
     expect(onSaved).toHaveBeenCalledWith("book-1");
   });
+
+  it("lets the bottom sheet resize around focused inputs", () => {
+    const renderResult = renderWithProviders(
+      <AddBookSheet
+        onClose={jest.fn()}
+        onSaved={jest.fn()}
+        onScanBarcode={jest.fn()}
+        onScanQuote={jest.fn()}
+      />,
+    );
+
+    const sheet = renderResult.UNSAFE_getByProps({ keyboardBehavior: "interactive" });
+
+    expect(sheet.props.keyboardBlurBehavior).toBe("restore");
+    expect(sheet.props.android_keyboardInputMode).toBe("adjustResize");
+  });
 });

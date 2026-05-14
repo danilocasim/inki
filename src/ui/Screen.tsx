@@ -5,7 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   type StyleProp,
-  type ViewStyle
+  type ViewStyle,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -22,13 +22,16 @@ export interface ScreenProps {
 /** Provides consistent safe-area, keyboard, and dark canvas treatment. */
 export function Screen({ children, contentStyle, subtitle, title }: ScreenProps): ReactElement {
   return (
-    <SafeAreaView edges={["top"]} style={styles.safeArea}>
+    <SafeAreaView edges={["top", "bottom"]} style={styles.safeArea} testID="screen-safe-area">
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboard}
       >
         <ScrollView
+          automaticallyAdjustKeyboardInsets={Platform.OS === "ios"}
           contentContainerStyle={[styles.content, contentStyle]}
+          keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {title ? <Text variant="screenTitle">{title}</Text> : null}
@@ -45,13 +48,13 @@ const styles = StyleSheet.create({
     gap: tokens.space[4],
     paddingBottom: tokens.space[10],
     paddingHorizontal: tokens.space[5],
-    paddingTop: tokens.space[3]
+    paddingTop: tokens.space[3],
   },
   keyboard: {
-    flex: 1
+    flex: 1,
   },
   safeArea: {
     backgroundColor: tokens.color.canvas,
-    flex: 1
-  }
+    flex: 1,
+  },
 });

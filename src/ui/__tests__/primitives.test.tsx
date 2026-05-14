@@ -1,8 +1,10 @@
 import { fireEvent, screen } from "@testing-library/react-native";
+import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 
 import { renderWithProviders } from "../../test/render";
 import { Button } from "../Button";
 import { ErrorState } from "../ErrorState";
+import { Screen } from "../Screen";
 import { SegmentedControl } from "../SegmentedControl";
 import { StatTile } from "../StatTile";
 import { Text } from "../Text";
@@ -75,5 +77,25 @@ describe("ui primitives", () => {
     fireEvent.press(screen.getByText("Try again"));
 
     expect(recovered).toBe(true);
+  });
+
+  it("keeps shared screens safe-area and keyboard aware", () => {
+    const renderResult = renderWithProviders(
+      <Screen title="settings">
+        <Text>Body</Text>
+      </Screen>,
+    );
+
+    expect(screen.getByTestId("screen-safe-area").props.edges).toEqual(["top", "bottom"]);
+
+    const keyboard = renderResult.UNSAFE_getByType(KeyboardAvoidingView);
+    const scroll = renderResult.UNSAFE_getByType(ScrollView);
+
+    expect(keyboard.props.behavior).toBe(Platform.OS === "ios" ? "padding" : "height");
+    expect(scroll.props.automaticallyAdjustKeyboardInsets).toBe(Platform.OS === "ios");
+    expect(scroll.props.keyboardDismissMode).toBe(
+      Platform.OS === "ios" ? "interactive" : "on-drag",
+    );
+    expect(scroll.props.keyboardShouldPersistTaps).toBe("handled");
   });
 });

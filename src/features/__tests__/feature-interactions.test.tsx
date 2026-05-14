@@ -48,27 +48,20 @@ describe("feature interactions", () => {
     expect(screen.getByText("export all data")).toBeTruthy();
   });
 
-  it("routes profile rows to their concrete feature actions", () => {
+  it("keeps profile focused on identity with settings as the control entry", () => {
     const opened: string[] = [];
 
-    renderWithProviders(
-      <PrivateProfileScreen
-        onExportLibrary={() => {
-          opened.push("export");
-        }}
-        onOpenNotifications={() => opened.push("notifications")}
-        onOpenPassport={() => opened.push("passport")}
-        onOpenSettings={() => opened.push("settings")}
-        onOpenWrapped={() => opened.push("wrapped")}
-      />,
-    );
+    renderWithProviders(<PrivateProfileScreen onOpenSettings={() => opened.push("settings")} />);
 
-    fireEvent.press(screen.getByText("reading wrapped"));
-    fireEvent.press(screen.getByText("annual passport"));
-    fireEvent.press(screen.getByText("export library"));
-    fireEvent.press(screen.getByText("open notifications"));
+    expect(screen.queryByText("reading wrapped")).toBeNull();
+    expect(screen.queryByText("annual passport")).toBeNull();
+    expect(screen.queryByText("export library")).toBeNull();
+    expect(screen.queryByText("open notifications")).toBeNull();
+    expect(screen.queryByLabelText("Open reading wrapped")).toBeNull();
 
-    expect(opened).toEqual(["wrapped", "passport", "export", "notifications"]);
+    fireEvent.press(screen.getByLabelText("Open settings"));
+
+    expect(opened).toEqual(["settings"]);
   });
 
   it("supports explicit wrapped card previous and next navigation", () => {

@@ -140,6 +140,9 @@ export function AddBookSheet({
       enablePanDownToClose
       handleIndicatorStyle={styles.dragHandle}
       index={0}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      android_keyboardInputMode="adjustResize"
       onClose={onClose}
       snapPoints={snapPoints}
     >

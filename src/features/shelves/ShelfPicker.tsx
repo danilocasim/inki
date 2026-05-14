@@ -1,11 +1,19 @@
 import type { ReactElement } from "react";
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
+  BottomSheetScrollView,
   type BottomSheetBackdropProps,
   type BottomSheetModal as BottomSheetModalType,
 } from "@gorhom/bottom-sheet";
@@ -144,9 +152,15 @@ export const ShelfPicker = forwardRef<ShelfPickerHandle, ShelfPickerProps>(funct
       enablePanDownToClose
       handleIndicatorStyle={styles.dragHandle}
       index={0}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      android_keyboardInputMode="adjustResize"
       snapPoints={snapPoints}
     >
-      <BottomSheetView style={styles.body}>
+      <BottomSheetScrollView
+        contentContainerStyle={styles.body}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.header}>
           <Text variant="hero">Add to shelf</Text>
         </View>
@@ -174,9 +188,7 @@ export const ShelfPicker = forwardRef<ShelfPickerHandle, ShelfPickerProps>(funct
               return (
                 <Pressable
                   accessibilityLabel={
-                    isMember
-                      ? `Remove from ${shelf.title}`
-                      : `Add to ${shelf.title}`
+                    isMember ? `Remove from ${shelf.title}` : `Add to ${shelf.title}`
                   }
                   accessibilityRole="button"
                   key={shelf.id}
@@ -235,7 +247,7 @@ export const ShelfPicker = forwardRef<ShelfPickerHandle, ShelfPickerProps>(funct
             </Text>
           </Pressable>
         )}
-      </BottomSheetView>
+      </BottomSheetScrollView>
     </BottomSheetModal>
   );
 });
@@ -247,7 +259,7 @@ const styles = StyleSheet.create({
     width: 4,
   },
   body: {
-    flex: 1,
+    flexGrow: 1,
     gap: tokens.space[3],
     padding: tokens.space[5],
     paddingBottom: tokens.space[10],

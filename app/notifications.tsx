@@ -12,6 +12,7 @@ export default function NotificationsRoute(): ReactElement {
     <NotificationsScreen
       items={items}
       loading={loading}
+      onClose={() => router.back()}
       onOpenItem={(item) => {
         void markRead(item.id);
 

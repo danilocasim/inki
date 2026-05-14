@@ -722,7 +722,7 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
 
   return (
     <SafeAreaView edges={["top", "bottom"]} style={s.root}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={s.root}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={s.root}>
         {isWelcome ? (
           current.render()
         ) : isShareCard ? (
@@ -733,7 +733,9 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
         ) : (
           <>
             <ScrollView
+              automaticallyAdjustKeyboardInsets={Platform.OS === "ios"}
               contentContainerStyle={s.scrollContent}
+              keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >

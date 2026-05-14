@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import * as ImagePicker from "expo-image-picker";
+import { KeyboardAvoidingView, Platform } from "react-native";
 
 import { OnboardingScreen } from "../OnboardingScreen";
 import type { CreateBookInput } from "../../books/types";
@@ -85,5 +86,13 @@ describe("OnboardingScreen", () => {
         expect.objectContaining({ coverPath: "file:///onboarding-cover.jpg" }),
       );
     });
+  });
+
+  it("keeps onboarding inputs above the keyboard on every platform", () => {
+    const renderResult = renderWithProviders(<OnboardingScreen onComplete={jest.fn()} />);
+
+    const keyboard = renderResult.UNSAFE_getByType(KeyboardAvoidingView);
+
+    expect(keyboard.props.behavior).toBe(Platform.OS === "ios" ? "padding" : "height");
   });
 });

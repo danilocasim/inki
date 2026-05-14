@@ -39,11 +39,6 @@ export interface FigmaShelf {
   title: string;
 }
 
-export interface ProfileAction {
-  detail: string;
-  label: string;
-}
-
 /** Book labels and palettes extracted from the initial Figma mobile frames. */
 export const figmaBooks: readonly FigmaBook[] = [
   makeBook(
@@ -249,11 +244,6 @@ export const figmaShelves: readonly FigmaShelf[] = [
 
 /** Private local-only profile fixture for Figma frame 4:691. */
 export const figmaProfile = {
-  actions: [
-    { detail: "11 card formats, rendered on device", label: "reading wrapped" },
-    { detail: "PDF and image archive for your shelves", label: "annual passport" },
-    { detail: "JSON plus covers, saved from this phone", label: "export library" },
-  ] satisfies readonly ProfileAction[],
   frameIds: ["4:691"] as const,
   genres: ["literary fiction", "contemporary", "romance", "sci-fi"],
   handle: "@anya",

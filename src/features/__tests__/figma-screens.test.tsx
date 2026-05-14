@@ -75,10 +75,15 @@ describe("static Figma screen shells", () => {
 
     expect(screen.getByText("@anya")).toBeTruthy();
     expect(screen.getByText("local-only")).toBeTruthy();
-    expect(screen.getByText("reading wrapped")).toBeTruthy();
+    expect(screen.queryByText("reading wrapped")).toBeNull();
+    expect(screen.queryByText("annual passport")).toBeNull();
+    expect(screen.queryByText("export library")).toBeNull();
+    expect(screen.queryByText("open notifications")).toBeNull();
   });
 
   it("renders notification and capture screenshot labels", () => {
+    let closedNotifications = false;
+
     renderWithProviders(
       <NotificationsScreen
         items={[
@@ -90,10 +95,15 @@ describe("static Figma screen shells", () => {
             type: "share-streak",
           },
         ]}
+        onClose={() => {
+          closedNotifications = true;
+        }}
       />,
     );
 
     expect(screen.getByText("notifications")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Close notifications"));
+    expect(closedNotifications).toBe(true);
     expect(screen.getByText("12 day share streak")).toBeTruthy();
 
     renderWithProviders(<CaptureHubScreen onCaptureQuote={noop} />);

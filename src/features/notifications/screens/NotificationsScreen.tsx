@@ -5,6 +5,7 @@ import { Feather } from "@expo/vector-icons";
 import type { NotificationLogItem } from "../types";
 import { Card } from "../../../ui/Card";
 import { EmptyState } from "../../../ui/EmptyState";
+import { IconButton } from "../../../ui/IconButton";
 import { Screen } from "../../../ui/Screen";
 import { Text } from "../../../ui/Text";
 import { tokens } from "../../../ui/tokens";
@@ -12,24 +13,28 @@ import { tokens } from "../../../ui/tokens";
 export interface NotificationsScreenProps {
   items: readonly NotificationLogItem[];
   loading?: boolean;
+  onClose: () => void;
   onOpenItem?: (item: NotificationLogItem) => void;
 }
 
 export function NotificationsScreen({
   items,
   loading = false,
+  onClose,
   onOpenItem = noopOpenItem,
 }: NotificationsScreenProps): ReactElement {
   if (loading) {
     return (
-      <Screen title="notifications">
+      <Screen contentStyle={styles.content}>
+        <NotificationsHeader onClose={onClose} />
         <Text tone="muted">Loading local notifications...</Text>
       </Screen>
     );
   }
 
   return (
-    <Screen contentStyle={styles.content} title="notifications">
+    <Screen contentStyle={styles.content}>
+      <NotificationsHeader onClose={onClose} />
       {items.length === 0 ? (
         <EmptyState
           message="Local reminders will appear here after you enable them in settings."
@@ -76,6 +81,15 @@ export function NotificationsScreen({
   );
 }
 
+function NotificationsHeader({ onClose }: { onClose: () => void }): ReactElement {
+  return (
+    <View style={styles.header}>
+      <Text variant="screenTitle">notifications</Text>
+      <IconButton label="Close notifications" name="x" onPress={onClose} />
+    </View>
+  );
+}
+
 const formatTime = (iso: string): string => {
   const date = new Date(iso);
 
@@ -110,6 +124,11 @@ const styles = StyleSheet.create({
   footer: {
     marginTop: tokens.space[6],
     textAlign: "center",
+  },
+  header: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   iconBadge: {
     alignItems: "center",
