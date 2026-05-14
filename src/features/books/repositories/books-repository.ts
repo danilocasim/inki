@@ -8,6 +8,7 @@ export interface BooksRepository {
   getById(id: string): Promise<Book | undefined>;
   list(): Promise<Book[]>;
   listByStatus(status: BookStatus): Promise<Book[]>;
+  togglePin(bookId: string): Promise<Book>;
 }
 
 export const createBooksRepository = (db: DatabaseWriter): BooksRepository => ({
@@ -48,8 +49,24 @@ export const createBooksRepository = (db: DatabaseWriter): BooksRepository => ({
   },
   getById: (id) => getBookById(db, id),
   list: () => listBooks(db),
-  listByStatus: (status) => listBooksByStatus(db, status)
+  listByStatus: (status) => listBooksByStatus(db, status),
+  togglePin: (bookId) => togglePin(db, bookId)
 });
+
+export const togglePin = async (db: DatabaseWriter, bookId: string): Promise<Book> => {
+  await db.runAsync(
+    "UPDATE books SET is_pinned = CASE is_pinned WHEN 1 THEN 0 ELSE 1 END, updated_at = ? WHERE id = ?;",
+    [nowIso(), bookId]
+  );
+
+  const updated = await getBookById(db, bookId);
+
+  if (!updated) {
+    throw new Error("Book not found.");
+  }
+
+  return updated;
+};
 
 export const getBookById = async (db: DatabaseReader, id: string): Promise<Book | undefined> => {
   const row = await db.getFirstAsync<BookRow>("SELECT * FROM books WHERE id = ?;", [id]);

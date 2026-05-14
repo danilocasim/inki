@@ -50,6 +50,7 @@ export function ShelfDetailScreen({
             genre: book.genre,
             id: book.id,
             isChangedYou: false,
+            isPinned: false,
             palette: book.palette,
             progress: book.progress,
             status: book.status,

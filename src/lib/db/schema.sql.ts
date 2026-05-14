@@ -123,6 +123,11 @@ CREATE INDEX IF NOT EXISTS idx_quotes_book_created_at ON quotes(book_id, created
 CREATE INDEX IF NOT EXISTS idx_notifications_log_type_sent_at ON notifications_log(type, sent_at);
 `;
 
+export const schemaV3Sql = `
+ALTER TABLE books ADD COLUMN is_pinned INTEGER NOT NULL DEFAULT 0 CHECK (is_pinned IN (0, 1));
+CREATE INDEX IF NOT EXISTS idx_books_pinned ON books(is_pinned, status);
+`;
+
 export const schemaV2Sql = `
 CREATE TABLE IF NOT EXISTS book_notes (
   id TEXT PRIMARY KEY NOT NULL,

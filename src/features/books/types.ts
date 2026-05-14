@@ -13,6 +13,7 @@ export interface Book {
   id: string;
   isbn?: string | undefined;
   isChangedYou: boolean;
+  isPinned: boolean;
   moodTag?: string | undefined;
   palette: BookPalette;
   progress?: number | undefined;
@@ -35,6 +36,7 @@ export interface BookRow {
   id: string;
   isbn: string | null;
   is_changed_you: number;
+  is_pinned: number;
   mood_tag: string | null;
   source: string | null;
   spine_color: string;
@@ -78,6 +80,7 @@ export const mapBookRow = (row: BookRow): Book => {
     id: row.id,
     isbn: row.isbn ?? undefined,
     isChangedYou: row.is_changed_you === 1,
+    isPinned: row.is_pinned === 1,
     moodTag: row.mood_tag ?? undefined,
     palette: { cover: row.cover_color, spine: row.spine_color, text: "#FFF9F0" },
     progress,

@@ -21,6 +21,14 @@ jest.mock("@expo/vector-icons", () => {
   };
 });
 
+jest.mock("expo-haptics", () => ({
+  ImpactFeedbackStyle: { Light: "light", Medium: "medium", Heavy: "heavy" },
+  impactAsync: jest.fn(() => Promise.resolve()),
+  selectionAsync: jest.fn(() => Promise.resolve()),
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  NotificationFeedbackType: { Success: "success", Warning: "warning", Error: "error" },
+}));
+
 jest.mock("@gorhom/bottom-sheet", () => {
   const React = jest.requireActual<typeof import("react")>("react");
   const { View } = jest.requireActual<typeof import("react-native")>("react-native");

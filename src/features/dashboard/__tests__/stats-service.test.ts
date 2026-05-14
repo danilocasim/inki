@@ -26,6 +26,7 @@ function makeBook(
     currentPage: progress,
     id,
     isChangedYou,
+    isPinned: false,
     palette: { cover: "#111111", spine: "#000000", text: "#FFFFFF" },
     progress,
     status,

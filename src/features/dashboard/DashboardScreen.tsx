@@ -1,12 +1,18 @@
 import type { ReactElement } from "react";
-import { useState } from "react";
-import { Image, Pressable, StyleSheet, View } from "react-native";
-
-const pulseMinImg = require("../../assets/heatmap/pulse_min.png");
-const pulseMaxImg = require("../../assets/heatmap/pulse_max.png");
+import { useRef, useState } from "react";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type LayoutRectangle,
+} from "react-native";
 
 import type { Book, BookStatus } from "../books/types";
 import { bookStatusOptions } from "../books/book-status";
+import { LongPressMenu } from "./components/LongPressMenu";
+import { orderBooksForStack } from "./services/stack-order";
 import { buildDashboardData } from "./services/stats-service";
 import type { DashboardData } from "./types";
 import { Card } from "../../ui/Card";
@@ -18,12 +24,23 @@ import { StatTile } from "../../ui/StatTile";
 import { Text } from "../../ui/Text";
 import { tokens } from "../../ui/tokens";
 
+const pulseMinImg = require("../../assets/heatmap/pulse_min.png");
+const pulseMaxImg = require("../../assets/heatmap/pulse_max.png");
+
 export interface DashboardScreenProps {
   data?: DashboardData | undefined;
   loading?: boolean;
   onAddBook?: () => void;
   onOpenNotifications?: () => void;
   onOpenBook?: (bookId: string) => void;
+  onPinBook?: (book: Book) => void;
+  onShareBook?: (book: Book) => void;
+  onShelveBook?: (book: Book) => void;
+}
+
+interface ActiveLongPress {
+  book: Book;
+  rect: LayoutRectangle;
 }
 
 /** Home dashboard for screenshot parity, backed by local SQLite when data is provided. */
@@ -33,12 +50,24 @@ export function DashboardScreen({
   onAddBook = noop,
   onOpenNotifications = noop,
   onOpenBook = noopOpenBook,
+  onPinBook = noopBook,
+  onShareBook = noopBook,
+  onShelveBook = noopBook,
 }: DashboardScreenProps): ReactElement {
   const [activeTab, setActiveTab] = useState<BookStatus>("reading");
+  const [activeLongPress, setActiveLongPress] = useState<ActiveLongPress | null>(null);
+  const { width: windowWidth } = useWindowDimensions();
   const dashboard = data ?? emptyDashboardData;
   const filteredBooks = dashboard.books.filter((book) => book.status === activeTab);
   const visibleBooks = orderBooksForStack(filteredBooks).slice(0, 6);
   const hasBooks = dashboard.books.length > 0;
+
+  const beginLongPress = (book: Book, rect: LayoutRectangle): void => {
+    if (activeLongPress) return;
+    setActiveLongPress({ book, rect });
+  };
+
+  const endLongPress = (): void => setActiveLongPress(null);
 
   return (
     <Screen contentStyle={styles.screenContent}>
@@ -89,7 +118,12 @@ export function DashboardScreen({
         {visibleBooks.length > 0 ? (
           <View style={styles.bookGrid}>
             {visibleBooks.map((book) => (
-              <StackBook key={book.id} book={book} onOpenBook={onOpenBook} />
+              <StackBook
+                book={book}
+                key={book.id}
+                onLongPress={(rect) => beginLongPress(book, rect)}
+                onOpenBook={onOpenBook}
+              />
             ))}
           </View>
         ) : (
@@ -124,29 +158,60 @@ export function DashboardScreen({
         <Text tone="muted">No feeds. No followers.</Text>
         <Text tone="muted">Just you, your books, and the data you leave behind.</Text>
       </View>
+
+      {activeLongPress ? (
+        <LongPressMenu
+          book={activeLongPress.book}
+          onDismiss={endLongPress}
+          onPin={() => onPinBook(activeLongPress.book)}
+          onShare={() => onShareBook(activeLongPress.book)}
+          onShelf={() => onShelveBook(activeLongPress.book)}
+          screenWidth={windowWidth}
+          tileRect={activeLongPress.rect}
+        />
+      ) : null}
     </Screen>
   );
 }
 
 const noop = (): void => undefined;
+const noopBook = (_book: Book): void => undefined;
 const noopOpenBook = (_bookId: string): void => undefined;
 const emptyDashboardData: DashboardData = buildDashboardData([]);
 
 function StackBook({
   book,
+  onLongPress,
   onOpenBook,
 }: {
   book: Book;
+  onLongPress: (rect: LayoutRectangle) => void;
   onOpenBook: (bookId: string) => void;
 }): ReactElement {
   const progress = book.progress ?? progressFromPages(book);
   const pages = getBookPages(book);
+  const tileRef = useRef<View>(null);
+
+  const handleLongPress = (): void => {
+    tileRef.current?.measureInWindow((x, y, width, height) => {
+      onLongPress({ height, width, x, y });
+    });
+  };
 
   return (
     <Pressable
+      accessibilityActions={[{ label: "Book options", name: "Book options" }]}
       accessibilityLabel={`Open ${book.title}`}
       accessibilityRole="button"
+      delayLongPress={400}
+      onAccessibilityAction={(event) => {
+        if (event.nativeEvent.actionName === "Book options") {
+          handleLongPress();
+        }
+      }}
+      onLongPress={handleLongPress}
       onPress={() => onOpenBook(book.id)}
+      ref={tileRef}
       style={styles.bookTile}
     >
       <View style={[styles.bookCover, { backgroundColor: book.palette.cover }]}>
@@ -286,31 +351,6 @@ const buildHeatmapRows = (): HeatLevel[][] =>
   );
 
 const heatmapRows = buildHeatmapRows();
-
-const statusOrder: Record<BookStatus, number> = {
-  reading: 0,
-  recent: 1,
-  finished: 2,
-  "want-to-read": 3,
-  "not-yet": 4,
-};
-
-const orderBooksForStack = (books: readonly Book[]): Book[] =>
-  [...books].sort((left, right) => {
-    const statusDelta = statusOrder[left.status] - statusOrder[right.status];
-
-    if (statusDelta !== 0) {
-      return statusDelta;
-    }
-
-    const progressDelta = (right.progress ?? 0) - (left.progress ?? 0);
-
-    if (progressDelta !== 0) {
-      return progressDelta;
-    }
-
-    return left.title.localeCompare(right.title);
-  });
 
 const styles = StyleSheet.create({
   bookAuthor: {

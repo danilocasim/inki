@@ -6,16 +6,64 @@ import type { CreateShelfInput, Shelf, ShelfRow } from "../types";
 import { mapShelfRow } from "../types";
 
 export interface ShelvesRepository {
+  addBook(shelfId: string, bookId: string): Promise<void>;
   create(input: CreateShelfInput): Promise<Shelf>;
   getById(id: string): Promise<Shelf | undefined>;
   list(): Promise<Shelf[]>;
+  listShelvesForBook(bookId: string): Promise<Shelf[]>;
+  removeBook(shelfId: string, bookId: string): Promise<void>;
 }
 
 export const createShelvesRepository = (db: DatabaseWriter): ShelvesRepository => ({
+  addBook: (shelfId, bookId) => addBookToShelf(db, shelfId, bookId),
   create: (input) => createShelf(db, input),
   getById: (id) => getShelfById(db, id),
-  list: () => listShelves(db)
+  list: () => listShelves(db),
+  listShelvesForBook: (bookId) => listShelvesForBook(db, bookId),
+  removeBook: (shelfId, bookId) => removeBookFromShelf(db, shelfId, bookId)
 });
+
+export const addBookToShelf = async (
+  db: DatabaseWriter,
+  shelfId: string,
+  bookId: string
+): Promise<void> => {
+  await db.runAsync(
+    `INSERT OR IGNORE INTO shelf_books (shelf_id, book_id, sort_order, added_at)
+     VALUES (?, ?, 0, ?);`,
+    [shelfId, bookId, nowIso()]
+  );
+};
+
+export const removeBookFromShelf = async (
+  db: DatabaseWriter,
+  shelfId: string,
+  bookId: string
+): Promise<void> => {
+  await db.runAsync(
+    "DELETE FROM shelf_books WHERE shelf_id = ? AND book_id = ?;",
+    [shelfId, bookId]
+  );
+};
+
+export const listShelvesForBook = async (
+  db: DatabaseReader,
+  bookId: string
+): Promise<Shelf[]> => {
+  const rows = await db.getAllAsync<ShelfRow>(
+    `SELECT shelves.id, shelves.name, shelves.description, shelves.accent, shelves.kind,
+      shelves.sort_order, COUNT(other.book_id) AS book_count
+     FROM shelves
+     INNER JOIN shelf_books AS member ON member.shelf_id = shelves.id AND member.book_id = ?
+     LEFT JOIN shelf_books AS other ON other.shelf_id = shelves.id
+     WHERE shelves.kind = 'custom'
+     GROUP BY shelves.id
+     ORDER BY shelves.sort_order ASC, shelves.created_at ASC;`,
+    [bookId]
+  );
+
+  return rows.map(mapShelfRow);
+};
 
 export const createShelf = async (
   db: DatabaseWriter,
