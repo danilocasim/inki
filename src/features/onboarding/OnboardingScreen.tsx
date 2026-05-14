@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite";
@@ -54,6 +55,7 @@ interface Props {
 
 export function OnboardingScreen({ onComplete }: Props): ReactElement {
   const db = useSQLiteContext();
+  const router = useRouter();
 
   // ── bookmark flow state ─────────────────────────────────────────
   const [step, setStep] = useState(0);
@@ -101,6 +103,7 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
       // proceed even if the prefs write fails — onComplete must always fire
     }
     onComplete();
+    router.replace("/(tabs)");
   };
 
   const handleAddBook = async () => {
