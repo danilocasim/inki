@@ -69,7 +69,7 @@ describe("BookShareScreen", () => {
       expect(screen.getByText("Pick a template.")).toBeTruthy();
     });
 
-    fireEvent.press(screen.getByLabelText("Template Cover left"));
+    fireEvent.press(screen.getByLabelText("Template Stacked quote"));
     fireEvent.press(screen.getByText("quote"));
 
     const previewScroll = await screen.findByTestId("share-preview-scroll");
@@ -96,14 +96,14 @@ describe("BookShareScreen", () => {
     fireEvent.press(screen.getByText("Pick from library"));
 
     await waitFor(() => {
-      expect(screen.getByText("Editorial story")).toBeTruthy();
+      expect(screen.getByText("Editorial · left")).toBeTruthy();
     });
 
     expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledWith(
       expect.objectContaining({ aspect: [9, 16] }),
     );
 
-    fireEvent.press(screen.getByLabelText("Template Editorial story"));
+    fireEvent.press(screen.getByLabelText("Template Editorial · left"));
 
     expect(screen.getByLabelText("Book image for Piranesi")).toBeTruthy();
     expect(screen.getByLabelText("inki watermark")).toBeTruthy();
@@ -131,10 +131,10 @@ describe("BookShareScreen", () => {
     fireEvent.press(screen.getByText("Pick from library"));
 
     await waitFor(() => {
-      expect(screen.getByText("Editorial story")).toBeTruthy();
+      expect(screen.getByText("Editorial · left")).toBeTruthy();
     });
 
-    fireEvent.press(screen.getByLabelText("Template Editorial story"));
+    fireEvent.press(screen.getByLabelText("Template Editorial · left"));
 
     expect(screen.getByLabelText("Default book cover for Meditations")).toBeTruthy();
     expect(screen.getByLabelText("inki watermark")).toBeTruthy();

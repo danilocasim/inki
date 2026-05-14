@@ -41,17 +41,32 @@ export const splitQuoteIntoLines = (quote: string): readonly string[] => {
   return [...lines.slice(0, MAX_QUOTE_LINES - 1), lines.slice(MAX_QUOTE_LINES - 1).join(" ")];
 };
 
-export function QuoteHighlightLines({
-  quote,
-  scale,
-}: {
+export interface QuoteHighlightLinesProps {
+  alignment?: "left" | "right";
   quote: string;
   scale: number;
-}): ReactElement {
+  baseFontSize?: number;
+  baseLineHeight?: number;
+  basePaddingHorizontal?: number;
+  basePaddingVertical?: number;
+}
+
+export function QuoteHighlightLines({
+  alignment = "left",
+  quote,
+  scale,
+  baseFontSize = 40,
+  baseLineHeight = 48,
+  basePaddingHorizontal = 5,
+  basePaddingVertical = 1,
+}: QuoteHighlightLinesProps): ReactElement {
   const lines = splitQuoteIntoLines(quote);
+  const isRight = alignment === "right";
+  const rootAlignStyle = isRight ? styles.rootRight : styles.root;
+  const lineAlignStyle = isRight ? styles.lineRight : styles.line;
 
   return (
-    <View style={styles.root}>
+    <View style={rootAlignStyle}>
       {lines.map((line, index) => {
         const isFirst = index === 0;
         const isLast = index === lines.length - 1;
@@ -63,14 +78,14 @@ export function QuoteHighlightLines({
             minimumFontScale={0.74}
             numberOfLines={1}
             style={[
-              styles.line,
+              lineAlignStyle,
               scaled(
                 {
-                  fontSize: 40,
-                  lineHeight: 48,
+                  fontSize: baseFontSize,
+                  lineHeight: baseLineHeight,
                   marginBottom: -2,
-                  paddingHorizontal: 5,
-                  paddingVertical: 1,
+                  paddingHorizontal: basePaddingHorizontal,
+                  paddingVertical: basePaddingVertical,
                 },
                 scale,
               ),
@@ -84,19 +99,30 @@ export function QuoteHighlightLines({
   );
 }
 
+const baseLine = {
+  backgroundColor: "rgba(143,124,38,0.86)",
+  color: tokens.color.white,
+  fontFamily: fontFamily.bold,
+  fontSize: 40,
+  letterSpacing: 0,
+  lineHeight: 48,
+  overflow: "hidden",
+} as const;
+
 const styles = StyleSheet.create({
   line: {
+    ...baseLine,
     alignSelf: "flex-start",
-    backgroundColor: "rgba(143,124,38,0.86)",
-    color: tokens.color.white,
-    fontFamily: fontFamily.bold,
-    fontSize: 40,
-    fontWeight: "800",
-    letterSpacing: 0,
-    lineHeight: 48,
-    overflow: "hidden",
+  },
+  lineRight: {
+    ...baseLine,
+    alignSelf: "flex-end",
+    textAlign: "right",
   },
   root: {
     alignItems: "flex-start",
+  },
+  rootRight: {
+    alignItems: "flex-end",
   },
 });

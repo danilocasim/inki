@@ -1,6 +1,6 @@
 import type { ReactElement, RefObject } from "react";
-import { useRef, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
 import type { DashboardData } from "../../dashboard/types";
@@ -10,7 +10,9 @@ import { Button } from "../../../ui/Button";
 import { IconButton } from "../../../ui/IconButton";
 import { Screen } from "../../../ui/Screen";
 import { Text } from "../../../ui/Text";
-import { tokens } from "../../../ui/tokens";
+import { fontFamily, tokens } from "../../../ui/tokens";
+
+const DETAIL_PLACEHOLDER = "Add a note…";
 
 export interface WrappedScreenProps {
   cardType?: ShareCardType;
@@ -38,6 +40,16 @@ export function WrappedScreen({
   const shareLabel = shareLabelForType(cardType);
   const canGoBack = index > 0;
   const canGoForward = index < cards.length - 1;
+  const isLastCard = index === cards.length - 1;
+
+  const [editedDetail, setEditedDetail] = useState(card.detail);
+  const [isEditingDetail, setIsEditingDetail] = useState(false);
+
+  // Reset edit state on every navigation, including returning to the last card.
+  useEffect(() => {
+    setEditedDetail(card.detail);
+    setIsEditingDetail(false);
+  }, [card.detail, index]);
 
   const goBack = (): void => setIndex((current) => Math.max(0, current - 1));
   const goForward = (): void => setIndex((current) => Math.min(cards.length - 1, current + 1));
@@ -69,7 +81,19 @@ export function WrappedScreen({
         <Text tone="accent" variant="eyebrow">
           {card.kicker}
         </Text>
-        {card.kind === "genres" ? <GenresCard /> : <HeroCard card={card} />}
+        {card.kind === "genres" ? (
+          <GenresCard />
+        ) : (
+          <HeroCard
+            card={card}
+            detailValue={editedDetail}
+            editable={isLastCard}
+            editing={isLastCard && isEditingDetail}
+            onChangeDetail={setEditedDetail}
+            onEndEdit={() => setIsEditingDetail(false)}
+            onStartEdit={() => setIsEditingDetail(true)}
+          />
+        )}
       </View>
       <View style={styles.navigationRow}>
         <IconButton
@@ -109,14 +133,62 @@ interface WrappedCardModel {
   value: string;
 }
 
-function HeroCard({ card }: { card: WrappedCardModel }): ReactElement {
+interface HeroCardProps {
+  card: WrappedCardModel;
+  detailValue: string;
+  editable: boolean;
+  editing: boolean;
+  onChangeDetail: (text: string) => void;
+  onEndEdit: () => void;
+  onStartEdit: () => void;
+}
+
+function HeroCard({
+  card,
+  detailValue,
+  editable,
+  editing,
+  onChangeDetail,
+  onEndEdit,
+  onStartEdit,
+}: HeroCardProps): ReactElement {
   return (
     <View style={styles.heroCard}>
       <Text style={styles.value} variant="hero">
         {card.value}
       </Text>
       <Text variant="hero">{card.title}</Text>
-      <Text tone="accent">{card.detail}</Text>
+      {editable ? (
+        editing ? (
+          <TextInput
+            accessibilityLabel="Edit card detail"
+            autoFocus
+            blurOnSubmit
+            onBlur={onEndEdit}
+            onChangeText={onChangeDetail}
+            onSubmitEditing={onEndEdit}
+            placeholder={DETAIL_PLACEHOLDER}
+            placeholderTextColor={tokens.color.muted}
+            returnKeyType="done"
+            style={styles.detailInput}
+            value={detailValue}
+          />
+        ) : (
+          <Pressable
+            accessibilityHint="Tap to edit"
+            accessibilityLabel="Edit card detail"
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={onStartEdit}
+          >
+            <Text style={styles.detailEditable} tone="accent">
+              {detailValue.length > 0 ? detailValue : DETAIL_PLACEHOLDER}
+            </Text>
+          </Pressable>
+        )
+      ) : (
+        <Text tone="accent">{card.detail}</Text>
+      )}
     </View>
   );
 }
@@ -295,6 +367,23 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: "center",
     width: 48,
+  },
+  detailEditable: {
+    borderBottomColor: "rgba(158,199,250,0.55)",
+    borderBottomWidth: 1,
+    borderStyle: "dashed",
+    paddingBottom: 2,
+  },
+  detailInput: {
+    borderBottomColor: tokens.color.accent,
+    borderBottomWidth: 1,
+    color: tokens.color.accent,
+    fontFamily: fontFamily.regular,
+    fontSize: 16,
+    lineHeight: 23,
+    minWidth: 160,
+    paddingBottom: 2,
+    textAlign: "center",
   },
   genreFooter: {
     fontSize: 16,

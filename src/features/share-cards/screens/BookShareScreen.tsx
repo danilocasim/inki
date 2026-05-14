@@ -186,8 +186,10 @@ export function BookShareScreen({
             dateLabel={dateLabel}
             editingQuote={editingQuote}
             onPickPhoto={pickFromLibrary}
+            onEndEditQuote={() => setEditingQuote(false)}
             onShare={() => void captureAndShare(cardRef, "Share Inki card")}
             onSave={() => void captureAndShare(cardRef, "Save Inki card")}
+            onStartEditQuote={() => setEditingQuote(true)}
             onStory={() => void captureAndShare(cardRef, "Send to story")}
             onToggleEditQuote={() => setEditingQuote((current) => !current)}
             photoUri={photoUri}
@@ -277,16 +279,26 @@ function TemplateStep({
               selected === tpl.id ? styles.templateTileSelected : undefined,
             ]}
           >
-            <View style={styles.templatePreview}>
-              <BookShareTemplateArt
+            {tpl.id === "quote" ? (
+              <TemplateThumbnail
                 book={book}
                 dateLabel={dateLabel}
                 photoUri={photoUri}
                 quote={quote}
-                scale={0.34}
                 templateId={tpl.id}
               />
-            </View>
+            ) : (
+              <View style={styles.templatePreview}>
+                <BookShareTemplateArt
+                  book={book}
+                  dateLabel={dateLabel}
+                  photoUri={photoUri}
+                  quote={quote}
+                  scale={0.34}
+                  templateId={tpl.id}
+                />
+              </View>
+            )}
             <View style={styles.templateMeta}>
               <Text style={styles.templateLabel}>{tpl.label}</Text>
               <Text style={styles.templateDesc}>{tpl.description}</Text>
@@ -298,14 +310,60 @@ function TemplateStep({
   );
 }
 
+const THUMBNAIL_BASE_WIDTH = 360;
+
+function TemplateThumbnail({
+  book,
+  dateLabel,
+  photoUri,
+  quote,
+  templateId,
+}: {
+  book: Book;
+  dateLabel: string;
+  photoUri: string;
+  quote: string;
+  templateId: BookShareTemplateId;
+}): ReactElement {
+  const [width, setWidth] = useState(0);
+  const scale = width > 0 ? width / THUMBNAIL_BASE_WIDTH : 0;
+
+  return (
+    <View
+      onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
+      style={styles.templatePreview}
+    >
+      {scale > 0 ? (
+        <View
+          style={[
+            styles.thumbnailStage,
+            { transform: [{ scale }], width: THUMBNAIL_BASE_WIDTH },
+          ]}
+        >
+          <BookShareTemplateArt
+            book={book}
+            dateLabel={dateLabel}
+            photoUri={photoUri}
+            quote={quote}
+            scale={1}
+            templateId={templateId}
+          />
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 function PreviewStep({
   book,
   cardRef,
   dateLabel,
   editingQuote,
+  onEndEditQuote,
   onPickPhoto,
   onSave,
   onShare,
+  onStartEditQuote,
   onStory,
   onToggleEditQuote,
   photoUri,
@@ -319,9 +377,11 @@ function PreviewStep({
   cardRef: RefObject<View | null>;
   dateLabel: string;
   editingQuote: boolean;
+  onEndEditQuote: () => void;
   onPickPhoto: () => void;
   onSave: () => void;
   onShare: () => void;
+  onStartEditQuote: () => void;
   onStory: () => void;
   onToggleEditQuote: () => void;
   photoUri: string;
@@ -369,7 +429,9 @@ function PreviewStep({
           dateLabel={dateLabel}
           editingQuote={editingQuote}
           onChangeQuote={setQuote}
+          onEndEditQuote={onEndEditQuote}
           onFocusQuote={handleQuoteFocus}
+          onStartEditQuote={onStartEditQuote}
           photoUri={photoUri}
           quote={quote}
           templateId={templateId}
@@ -502,6 +564,13 @@ const styles = StyleSheet.create({
     aspectRatio: 9 / 16,
     backgroundColor: tokens.color.black,
     overflow: "hidden",
+  },
+  thumbnailStage: {
+    aspectRatio: 9 / 16,
+    left: 0,
+    position: "absolute",
+    top: 0,
+    transformOrigin: "top left",
   },
   templateTile: {
     borderColor: tokens.color.border,

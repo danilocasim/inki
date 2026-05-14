@@ -1,13 +1,13 @@
 import type { ReactElement } from "react";
-import { Image, ImageBackground, StyleSheet, TextInput, View } from "react-native";
+import { Image, ImageBackground, Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import type { Book } from "../../books/types";
 import { Text } from "../../../ui/Text";
 import { fontFamily, tokens } from "../../../ui/tokens";
-import { BookCoverArtwork } from "./BookCoverArtwork";
 import type { BookShareTemplateId } from "./book-share-templates";
 import { EditorialStoryTemplate } from "./EditorialStoryTemplate";
-import { cleanQuoteText, scaled } from "./template-utils";
+import { QuoteHighlightLines } from "./QuoteHighlightLines";
+import { scaled } from "./template-utils";
 
 const HIGHLIGHT = tokens.color.gold;
 
@@ -16,7 +16,9 @@ export interface BookShareTemplateArtProps {
   dateLabel: string;
   editingQuote?: boolean | undefined;
   onChangeQuote?: ((value: string) => void) | undefined;
+  onEndEditQuote?: (() => void) | undefined;
   onFocusQuote?: (() => void) | undefined;
+  onStartEditQuote?: (() => void) | undefined;
   photoUri: string;
   quote: string;
   scale?: number;
@@ -28,23 +30,28 @@ export function BookShareTemplateArt({
   dateLabel,
   editingQuote = false,
   onChangeQuote,
+  onEndEditQuote,
   onFocusQuote,
+  onStartEditQuote,
   photoUri,
   quote,
   scale = 1,
   templateId,
 }: BookShareTemplateArtProps): ReactElement {
-  if (templateId === "story-quote") {
+  if (templateId === "story-quote" || templateId === "story-quote-right") {
     return (
       <EditorialStoryTemplate
         book={book}
         dateLabel={dateLabel}
         editingQuote={editingQuote}
         onChangeQuote={onChangeQuote}
+        onEndEditQuote={onEndEditQuote}
         onFocusQuote={onFocusQuote}
+        onStartEditQuote={onStartEditQuote}
         photoUri={photoUri}
         quote={quote}
         scale={scale}
+        side={templateId === "story-quote-right" ? "right" : "left"}
       />
     );
   }
@@ -55,11 +62,12 @@ export function BookShareTemplateArt({
       dateLabel={dateLabel}
       editingQuote={editingQuote}
       onChangeQuote={onChangeQuote}
+      onEndEditQuote={onEndEditQuote}
       onFocusQuote={onFocusQuote}
+      onStartEditQuote={onStartEditQuote}
       photoUri={photoUri}
       quote={quote}
       scale={scale}
-      templateId={templateId}
     />
   );
 }
@@ -69,32 +77,29 @@ function ClassicBookShareTemplate({
   dateLabel,
   editingQuote,
   onChangeQuote,
+  onEndEditQuote,
   onFocusQuote,
+  onStartEditQuote,
   photoUri,
   quote,
   scale,
-  templateId,
 }: Required<
-  Pick<
-    BookShareTemplateArtProps,
-    "book" | "dateLabel" | "photoUri" | "quote" | "scale" | "templateId"
-  >
+  Pick<BookShareTemplateArtProps, "book" | "dateLabel" | "photoUri" | "quote" | "scale">
 > &
   Pick<
     BookShareTemplateArtProps,
-    "editingQuote" | "onChangeQuote" | "onFocusQuote"
+    "editingQuote" | "onChangeQuote" | "onEndEditQuote" | "onFocusQuote" | "onStartEditQuote"
   >): ReactElement {
-  const isQuoteTemplate = templateId === "quote";
-  const cleanQuote = cleanQuoteText(quote);
-
-  const quoteBlock = (
-    <View
-      style={[styles.cardQuoteBlock, scaled({ paddingHorizontal: 8, paddingVertical: 6 }, scale)]}
-    >
-      {editingQuote && onChangeQuote ? (
+  const quoteBlock =
+    editingQuote && onChangeQuote ? (
+      <View
+        style={[styles.cardQuoteBlock, scaled({ paddingHorizontal: 8, paddingVertical: 6 }, scale)]}
+      >
         <TextInput
           accessibilityLabel="Quote text"
+          autoFocus
           multiline
+          onBlur={onEndEditQuote}
           onChangeText={onChangeQuote}
           onFocus={onFocusQuote}
           placeholder="Type the line..."
@@ -108,13 +113,38 @@ function ClassicBookShareTemplate({
           textAlignVertical="top"
           value={quote}
         />
-      ) : (
-        <Text style={[styles.cardQuoteText, scaled({ fontSize: 22, lineHeight: 30 }, scale)]}>
-          {`"${cleanQuote}"`}
-        </Text>
-      )}
-    </View>
-  );
+      </View>
+    ) : onStartEditQuote ? (
+      <Pressable
+        accessibilityHint="Tap to edit the quote"
+        accessibilityLabel="Edit quote"
+        accessibilityRole="button"
+        hitSlop={20}
+        onPress={onStartEditQuote}
+        style={({ pressed }) => [
+          styles.editableWrap,
+          pressed ? styles.editablePressed : undefined,
+        ]}
+      >
+        <QuoteHighlightLines
+          baseFontSize={22}
+          baseLineHeight={30}
+          basePaddingHorizontal={6}
+          basePaddingVertical={2}
+          quote={quote}
+          scale={scale}
+        />
+      </Pressable>
+    ) : (
+      <QuoteHighlightLines
+        baseFontSize={22}
+        baseLineHeight={30}
+        basePaddingHorizontal={6}
+        basePaddingVertical={2}
+        quote={quote}
+        scale={scale}
+      />
+    );
 
   return (
     <ImageBackground
@@ -125,26 +155,9 @@ function ClassicBookShareTemplate({
     >
       <View style={[styles.cardOverlay, scaled({ padding: 22 }, scale)]}>
         <Text style={[styles.cardDate, scaled({ fontSize: 15 }, scale)]}>{dateLabel}</Text>
-
-        {templateId === "cover-left" ? (
-          <View
-            style={[styles.coverLeft, scaled({ height: 260, marginTop: 18, width: 165 }, scale)]}
-          >
-            <BookCoverArtwork book={book} scale={scale} />
-          </View>
-        ) : null}
-
-        {templateId === "cover-center" ? (
-          <View
-            style={[styles.coverCenter, scaled({ height: 260, marginTop: 18, width: 170 }, scale)]}
-          >
-            <BookCoverArtwork book={book} scale={scale} />
-          </View>
-        ) : null}
-
         <View style={{ flex: 1 }} />
         {quoteBlock}
-        {isQuoteTemplate ? <Attribution book={book} scale={scale} /> : null}
+        <Attribution book={book} scale={scale} />
         <Brand scale={scale} />
       </View>
     </ImageBackground>
@@ -175,7 +188,7 @@ function Brand({ scale }: { scale: number }): ReactElement {
         accessibilityLabel="inki watermark"
         resizeMode="contain"
         source={require("../../../assets/transparent-white-logo.png")}
-        style={scaled({ height: 28, width: 70 }, scale)}
+        style={[styles.cardBrandLogo, scaled({ height: 40, width: 100, marginRight: -8 }, scale)]}
       />
     </View>
   );
@@ -189,15 +202,23 @@ const styles = StyleSheet.create({
     flex: 1,
     overflow: "hidden",
   },
-  cardAttrib: { color: "rgba(255,255,255,0.7)", fontSize: 13 },
+  cardAttrib: {
+    color: "rgba(255,255,255,0.85)",
+    fontFamily: fontFamily.bold,
+    fontSize: 14,
+  },
   cardBookTitle: {
     color: tokens.color.white,
     fontFamily: fontFamily.bold,
     fontSize: 22,
-    fontWeight: "800",
     letterSpacing: 0.2,
   },
-  cardDate: { color: "rgba(255,255,255,0.85)", fontSize: 14, fontWeight: "500" },
+  cardBrandLogo: { alignSelf: "flex-end" },
+  cardDate: {
+    color: "rgba(255,255,255,0.9)",
+    fontFamily: fontFamily.bold,
+    fontSize: 14,
+  },
   cardDivider: { backgroundColor: "rgba(255,255,255,0.25)", height: 1, marginVertical: 6 },
   cardFooterRow: { alignItems: "center", flexDirection: "row" },
   cardImage: { borderRadius: tokens.radius.md },
@@ -211,25 +232,8 @@ const styles = StyleSheet.create({
     color: tokens.color.white,
     fontFamily: fontFamily.bold,
     fontSize: 22,
-    fontWeight: "800",
     lineHeight: 30,
   },
-  coverCenter: {
-    alignSelf: "center",
-    borderRadius: 4,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { height: 6, width: 0 },
-    shadowOpacity: 0.45,
-    shadowRadius: 14,
-  },
-  coverLeft: {
-    alignSelf: "flex-start",
-    borderRadius: 4,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { height: 6, width: 0 },
-    shadowOpacity: 0.45,
-    shadowRadius: 14,
-  },
+  editablePressed: { opacity: 0.85 },
+  editableWrap: { alignSelf: "stretch" },
 });

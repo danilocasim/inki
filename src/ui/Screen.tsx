@@ -15,12 +15,19 @@ import { tokens } from "./tokens";
 export interface ScreenProps {
   children: ReactNode;
   contentStyle?: StyleProp<ViewStyle>;
+  scrollEnabled?: boolean;
   subtitle?: string;
   title?: string;
 }
 
 /** Provides consistent safe-area, keyboard, and dark canvas treatment. */
-export function Screen({ children, contentStyle, subtitle, title }: ScreenProps): ReactElement {
+export function Screen({
+  children,
+  contentStyle,
+  scrollEnabled = true,
+  subtitle,
+  title,
+}: ScreenProps): ReactElement {
   return (
     <SafeAreaView edges={["top", "bottom"]} style={styles.safeArea} testID="screen-safe-area">
       <KeyboardAvoidingView
@@ -32,6 +39,7 @@ export function Screen({ children, contentStyle, subtitle, title }: ScreenProps)
           contentContainerStyle={[styles.content, contentStyle]}
           keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
           keyboardShouldPersistTaps="handled"
+          scrollEnabled={scrollEnabled}
           showsVerticalScrollIndicator={false}
         >
           {title ? <Text variant="screenTitle">{title}</Text> : null}

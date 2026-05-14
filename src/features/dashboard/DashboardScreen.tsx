@@ -71,7 +71,7 @@ export function DashboardScreen({
   const endLongPress = (): void => setActiveLongPress(null);
 
   return (
-    <Screen contentStyle={styles.screenContent}>
+    <Screen contentStyle={styles.screenContent} scrollEnabled={activeLongPress === null}>
       <View style={styles.topBar}>
         <View style={styles.brandLockup}>
           <Text variant="sectionTitle">inki</Text>
@@ -286,16 +286,17 @@ function PulseCard(): ReactElement {
         </Text>
         {heatLevels.map((level) => {
           const source = cellImage(level);
-          return source === undefined ? (
-            <View key={level} style={styles.legendCell} />
-          ) : (
-            <Image
-              accessibilityIgnoresInvertColors
-              key={level}
-              resizeMode="cover"
-              source={source}
-              style={styles.legendCell}
-            />
+          return (
+            <View key={level} style={styles.legendCell}>
+              {source === undefined ? null : (
+                <Image
+                  accessibilityIgnoresInvertColors
+                  resizeMode="contain"
+                  source={source}
+                  style={styles.legendCellImage}
+                />
+              )}
+            </View>
           );
         })}
         <Text tone="muted" variant="caption">
@@ -308,16 +309,17 @@ function PulseCard(): ReactElement {
 
 function HeatCell({ level }: { level: HeatLevel }): ReactElement {
   const source = cellImage(level);
-  if (source === undefined) {
-    return <View style={styles.heatCell} />;
-  }
   return (
-    <Image
-      accessibilityIgnoresInvertColors
-      resizeMode="cover"
-      source={source}
-      style={styles.heatCell}
-    />
+    <View style={styles.heatCell}>
+      {source === undefined ? null : (
+        <Image
+          accessibilityIgnoresInvertColors
+          resizeMode="contain"
+          source={source}
+          style={styles.heatCellImage}
+        />
+      )}
+    </View>
   );
 }
 
@@ -406,12 +408,19 @@ const styles = StyleSheet.create({
     maxWidth: "100%",
   },
   heatCell: {
+    alignItems: "center",
+    aspectRatio: 1,
     borderColor: tokens.color.white,
     borderRadius: 4,
     borderWidth: 1,
     flex: 1,
     height: undefined,
-    aspectRatio: 1,
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  heatCellImage: {
+    height: "100%",
+    width: "100%",
   },
   heatmapGrid: {
     alignSelf: "stretch",
@@ -422,11 +431,18 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   legendCell: {
+    alignItems: "center",
     borderColor: tokens.color.white,
     borderRadius: 3,
     borderWidth: 1,
     height: 16,
+    justifyContent: "center",
+    overflow: "hidden",
     width: 16,
+  },
+  legendCellImage: {
+    height: "100%",
+    width: "100%",
   },
   localFooter: {
     alignItems: "center",

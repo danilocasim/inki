@@ -1,4 +1,4 @@
-export type BookShareTemplateId = "quote" | "cover-left" | "cover-center" | "story-quote";
+export type BookShareTemplateId = "story-quote" | "story-quote-right" | "quote";
 
 export interface BookShareTemplateOption {
   id: BookShareTemplateId;
@@ -7,8 +7,19 @@ export interface BookShareTemplateOption {
 }
 
 export const BOOK_SHARE_TEMPLATES: readonly BookShareTemplateOption[] = [
-  { id: "story-quote", label: "Editorial story", description: "photo · cover · quote" },
-  { id: "quote", label: "Quote", description: "no cover · attribution shown" },
-  { id: "cover-left", label: "Cover left", description: "large cover, quote below" },
-  { id: "cover-center", label: "Cover center", description: "centered cover, quote below" },
+  {
+    id: "story-quote",
+    label: "Editorial · left",
+    description: "cover left · stacked quote",
+  },
+  {
+    id: "story-quote-right",
+    label: "Editorial · right",
+    description: "cover right · stacked quote",
+  },
+  {
+    id: "quote",
+    label: "Stacked quote",
+    description: "no cover · title & author",
+  },
 ];
