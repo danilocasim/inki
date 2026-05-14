@@ -71,10 +71,10 @@ export const ShelfPicker = forwardRef<ShelfPickerHandle, ShelfPickerProps>(funct
         setCreating(false);
         setNewName("");
         void reload(id);
-        sheetRef.current?.snapToIndex(0);
+        sheetRef.current?.present();
       },
       dismiss: () => {
-        sheetRef.current?.close();
+        sheetRef.current?.dismiss();
       },
     }),
     [reload],
@@ -98,7 +98,7 @@ export const ShelfPicker = forwardRef<ShelfPickerHandle, ShelfPickerProps>(funct
         setMessage(`Added to ${shelf.title}`);
       }
       onChange?.();
-      sheetRef.current?.close();
+      sheetRef.current?.dismiss();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to update shelf.");
     }
@@ -116,7 +116,7 @@ export const ShelfPicker = forwardRef<ShelfPickerHandle, ShelfPickerProps>(funct
       setCreating(false);
       setNewName("");
       onChange?.();
-      sheetRef.current?.close();
+      sheetRef.current?.dismiss();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to create shelf.");
     }
@@ -143,7 +143,7 @@ export const ShelfPicker = forwardRef<ShelfPickerHandle, ShelfPickerProps>(funct
       enableDynamicSizing={false}
       enablePanDownToClose
       handleIndicatorStyle={styles.dragHandle}
-      index={-1}
+      index={0}
       snapPoints={snapPoints}
     >
       <BottomSheetView style={styles.body}>
@@ -194,11 +194,11 @@ export const ShelfPicker = forwardRef<ShelfPickerHandle, ShelfPickerProps>(funct
                       {shelf.count} {shelf.count === 1 ? "book" : "books"}
                     </Text>
                   </View>
-                  {isMember ? (
-                    <Feather color={tokens.color.accent} name="check" size={20} />
-                  ) : (
-                    <Feather color={tokens.color.muted} name="plus" size={20} />
-                  )}
+                  <Feather
+                    color={isMember ? tokens.color.accent : tokens.color.muted}
+                    name={isMember ? "check-circle" : "plus-circle"}
+                    size={18}
+                  />
                 </Pressable>
               );
             })}

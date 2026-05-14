@@ -11,7 +11,6 @@ export default function LogBookRoute(): ReactElement {
   return (
     <AddBookSheet
       initialIsbn={readParam(params.isbn)}
-      initialShelfId={shelfId}
       initialSource={readParam(params.source)}
       onClose={() => router.back()}
       onScanBarcode={() => router.push("/capture/barcode")}

@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { useEffect, useState } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
+import Slider from "@react-native-community/slider";
 
 import { BookCover } from "../BookCover";
 import { BookForm, bookFormValuesFromDraft } from "../components/BookForm";
@@ -60,7 +61,9 @@ export function BookDetailScreen({
     );
   }
 
-  const progress = book.progress ?? 0;
+  const sliderMax = book.totalPages ?? 100;
+  const parsedNextPage = parseSliderPage(nextPage, sliderMax);
+  const liveProgress = computeLiveProgress(nextPage, book.totalPages);
 
   const handleSaveProgress = async (): Promise<void> => {
     const currentPage = parsePage(nextPage, book.currentPage, book.totalPages);
@@ -179,10 +182,19 @@ export function BookDetailScreen({
         <Text tone="muted" variant="eyebrow">
           YOUR PROGRESS
         </Text>
-        <Text variant="hero">{progress}%</Text>
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${progress}%` }]} />
-        </View>
+        <Text variant="hero">{liveProgress}%</Text>
+        <Slider
+          accessibilityLabel="Reading progress"
+          maximumTrackTintColor={tokens.color.border}
+          maximumValue={sliderMax}
+          minimumTrackTintColor={tokens.color.accent}
+          minimumValue={0}
+          onValueChange={(value) => setNextPage(String(Math.round(value)))}
+          step={1}
+          style={styles.progressSlider}
+          thumbTintColor={tokens.color.accent}
+          value={parsedNextPage}
+        />
       </Card>
 
       <Card style={styles.formCard}>
@@ -313,6 +325,26 @@ const parsePage = (value: string, fallback: number, totalPages: number | undefin
   return totalPages === undefined ? page : Math.min(page, totalPages);
 };
 
+const parseSliderPage = (value: string, max: number): number => {
+  if (value.trim() === "") return 0;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) return 0;
+  return Math.min(parsed, max);
+};
+
+export const computeLiveProgress = (
+  nextPage: string,
+  totalPages: number | undefined,
+): number => {
+  if (nextPage.trim() === "") return 0;
+  const parsed = Number(nextPage);
+  if (!Number.isFinite(parsed) || parsed < 0) return 0;
+  if (totalPages === undefined || totalPages <= 0) {
+    return Math.min(100, Math.max(0, Math.round(parsed)));
+  }
+  return Math.min(100, Math.round((parsed / totalPages) * 100));
+};
+
 function AnnotationList({
   bookmarks,
   notes,
@@ -436,15 +468,8 @@ const styles = StyleSheet.create({
     minHeight: 120,
     paddingVertical: tokens.space[3],
   },
-  progressFill: {
-    backgroundColor: tokens.color.accent,
-    borderRadius: tokens.radius.pill,
-    height: 10,
-  },
-  progressTrack: {
-    backgroundColor: tokens.color.surfaceMuted,
-    borderRadius: tokens.radius.pill,
-    height: 10,
-    overflow: "hidden",
+  progressSlider: {
+    height: 44,
+    width: "100%",
   },
 });

@@ -25,8 +25,11 @@ import type { Book } from "../../books/types";
 import { Text } from "../../../ui/Text";
 import { tokens } from "../../../ui/tokens";
 
+export type LongPressColumn = 0 | 1 | 2;
+
 export interface LongPressMenuProps {
   book: Book;
+  column?: LongPressColumn;
   onDismiss: () => void;
   onPin: () => void;
   onShare: () => void;
@@ -44,6 +47,7 @@ const FADE_IN: WithTimingConfig = { duration: 200 };
 const FADE_OUT: WithTimingConfig = { duration: 150 };
 const BTN_DIAMETER = 56;
 const EDGE_PADDING = 16;
+const SCREEN_EDGE_PADDING = 8;
 const ACTION_GAP = 16;
 const ACTION_ITEM_WIDTH = 72;
 const ACTION_RAIL_WIDTH = ACTION_ITEM_WIDTH * 3 + ACTION_GAP * 2;
@@ -53,6 +57,7 @@ const ACTION_TILE_GAP = 18;
 
 export function LongPressMenu({
   book,
+  column = 1,
   onDismiss,
   onPin,
   onShare,
@@ -122,9 +127,9 @@ export function LongPressMenu({
     }, 180);
   };
 
-  const actionLayout = useMemo(
-    () => computeActionLayout(tileRect, screenWidth, screenHeight),
-    [screenHeight, screenWidth, tileRect],
+  const columnLayout = useMemo(
+    () => computeColumnActionLayout(tileRect, screenWidth, screenHeight, column),
+    [column, screenHeight, screenWidth, tileRect],
   );
 
   const overlayStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
@@ -192,42 +197,52 @@ export function LongPressMenu({
         </Pressable>
       </Animated.View>
 
-      <Animated.View
-        pointerEvents="box-none"
-        style={[
-          styles.actionRail,
-          {
-            height: actionLayout.rail.height,
-            left: actionLayout.rail.x,
-            top: actionLayout.rail.y,
-            width: actionLayout.rail.width,
-          },
-        ]}
-      >
-        <ActionButton
-          accessibilityLabel={book.isPinned ? "Unpin book" : "Pin book"}
-          active={book.isPinned}
-          animatedStyle={pinStyle}
-          icon="map-pin"
-          label={book.isPinned ? "Unpin" : "Pin"}
-          onPress={() => dismiss(onPin)}
-        />
-        <ActionButton
-          accessibilityLabel="Share book"
-          animatedStyle={shareStyle}
-          icon="share-2"
-          innerRef={shareRef}
-          label="Share"
-          onPress={() => dismiss(onShare)}
-        />
-        <ActionButton
-          accessibilityLabel="Add to shelf"
-          animatedStyle={shelfStyle}
-          icon="layers"
-          label="Shelf"
-          onPress={() => dismiss(onShelf)}
-        />
-      </Animated.View>
+      <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+        <View
+          pointerEvents="box-none"
+          style={[styles.actionAbsolute, { left: columnLayout.pin.x, top: columnLayout.pin.y }]}
+        >
+          <ActionButton
+            accessibilityLabel={book.isPinned ? "Unpin book" : "Pin book"}
+            active={book.isPinned}
+            animatedStyle={pinStyle}
+            icon="map-pin"
+            label={book.isPinned ? "Unpin" : "Pin"}
+            onPress={() => dismiss(onPin)}
+          />
+        </View>
+        <View
+          pointerEvents="box-none"
+          style={[
+            styles.actionAbsolute,
+            { left: columnLayout.share.x, top: columnLayout.share.y },
+          ]}
+        >
+          <ActionButton
+            accessibilityLabel="Share book"
+            animatedStyle={shareStyle}
+            icon="share-2"
+            innerRef={shareRef}
+            label="Share"
+            onPress={() => dismiss(onShare)}
+          />
+        </View>
+        <View
+          pointerEvents="box-none"
+          style={[
+            styles.actionAbsolute,
+            { left: columnLayout.shelf.x, top: columnLayout.shelf.y },
+          ]}
+        >
+          <ActionButton
+            accessibilityLabel="Add to shelf"
+            animatedStyle={shelfStyle}
+            icon="layers"
+            label="Shelf"
+            onPress={() => dismiss(onShelf)}
+          />
+        </View>
+      </View>
     </Modal>
   );
 }
@@ -352,11 +367,72 @@ const topLeftFromCenter = (center: Position, screenWidth: number): Position => (
   y: center.y - BTN_DIAMETER / 2,
 });
 
+export interface ColumnActionLayout {
+  pin: Position;
+  share: Position;
+  shelf: Position;
+}
+
+const ARC_RADIUS_SIDE = 78;
+const ARC_RADIUS_TOP = 82;
+// Angles in degrees, measured clockwise from the +x axis (screen-space:
+// -90° = straight up, 0° = right, +90° = down).
+const ARC_ANGLES_SIDE = [-90, -30, 30] as const;
+const ARC_ANGLES_TOP = [-140, -90, -40] as const;
+const DEG = Math.PI / 180;
+
+export function computeColumnActionLayout(
+  tile: LayoutRectangle,
+  screenWidth: number,
+  screenHeight: number,
+  column: LongPressColumn,
+): ColumnActionLayout {
+  const minX = SCREEN_EDGE_PADDING;
+  const maxX = Math.max(SCREEN_EDGE_PADDING, screenWidth - BTN_DIAMETER - SCREEN_EDGE_PADDING);
+  const minY = SCREEN_EDGE_PADDING;
+  const maxY = Math.max(SCREEN_EDGE_PADDING, screenHeight - BTN_DIAMETER - SCREEN_EDGE_PADDING);
+
+  // Anchor + sweep per column:
+  //   col 0 (leftmost):   top-right corner, arc sweeps up → right → down-right
+  //   col 1 (middle):     top-center,        smile-arc above the tile
+  //   col 2 (rightmost):  top-left corner,   mirror of col 0
+  let anchorX: number;
+  let directionX: 1 | -1;
+  let radius: number;
+  let angles: readonly number[];
+
+  if (column === 1) {
+    anchorX = tile.x + tile.width / 2;
+    directionX = 1;
+    radius = ARC_RADIUS_TOP;
+    angles = ARC_ANGLES_TOP;
+  } else {
+    anchorX = column === 0 ? tile.x + tile.width : tile.x;
+    directionX = column === 0 ? 1 : -1;
+    radius = ARC_RADIUS_SIDE;
+    angles = ARC_ANGLES_SIDE;
+  }
+  const anchorY = tile.y;
+
+  const positions: Position[] = angles.map((degrees) => {
+    const angle = degrees * DEG;
+    const centerX = anchorX + directionX * radius * Math.cos(angle);
+    const centerY = anchorY + radius * Math.sin(angle);
+    return {
+      x: clamp(centerX - BTN_DIAMETER / 2, minX, maxX),
+      y: clamp(centerY - BTN_DIAMETER / 2, minY, maxY),
+    };
+  });
+
+  return {
+    pin: positions[0]!,
+    share: positions[1]!,
+    shelf: positions[2]!,
+  };
+}
+
 const styles = StyleSheet.create({
-  actionRail: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    justifyContent: "space-between",
+  actionAbsolute: {
     position: "absolute",
   },
   actionBtn: {

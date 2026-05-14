@@ -45,9 +45,7 @@ export default function TabsLayout(): ReactElement {
       <Tabs.Screen
         name="capture"
         options={{
-          tabBarIcon: ({ color, size }) => <Feather color={color} name="camera" size={size} />,
-          tabBarLabel: "capture",
-          title: "capture"
+          href: null
         }}
       />
       <Tabs.Screen

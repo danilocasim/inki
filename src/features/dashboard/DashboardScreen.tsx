@@ -11,7 +11,7 @@ import {
 
 import type { Book, BookStatus } from "../books/types";
 import { bookStatusOptions } from "../books/book-status";
-import { LongPressMenu } from "./components/LongPressMenu";
+import { LongPressMenu, type LongPressColumn } from "./components/LongPressMenu";
 import { orderBooksForStack } from "./services/stack-order";
 import { buildDashboardData } from "./services/stats-service";
 import type { DashboardData } from "./types";
@@ -40,6 +40,7 @@ export interface DashboardScreenProps {
 
 interface ActiveLongPress {
   book: Book;
+  column: LongPressColumn;
   rect: LayoutRectangle;
 }
 
@@ -62,9 +63,9 @@ export function DashboardScreen({
   const visibleBooks = orderBooksForStack(filteredBooks).slice(0, 6);
   const hasBooks = dashboard.books.length > 0;
 
-  const beginLongPress = (book: Book, rect: LayoutRectangle): void => {
+  const beginLongPress = (book: Book, rect: LayoutRectangle, column: LongPressColumn): void => {
     if (activeLongPress) return;
-    setActiveLongPress({ book, rect });
+    setActiveLongPress({ book, column, rect });
   };
 
   const endLongPress = (): void => setActiveLongPress(null);
@@ -124,11 +125,11 @@ export function DashboardScreen({
 
         {visibleBooks.length > 0 ? (
           <View style={styles.bookGrid} testID="dashboard-book-grid">
-            {visibleBooks.map((book) => (
+            {visibleBooks.map((book, index) => (
               <StackBook
                 book={book}
                 key={book.id}
-                onLongPress={(rect) => beginLongPress(book, rect)}
+                onLongPress={(rect) => beginLongPress(book, rect, (index % 3) as LongPressColumn)}
                 onOpenBook={onOpenBook}
               />
             ))}
@@ -174,6 +175,7 @@ export function DashboardScreen({
       {activeLongPress ? (
         <LongPressMenu
           book={activeLongPress.book}
+          column={activeLongPress.column}
           onDismiss={endLongPress}
           onPin={() => onPinBook(activeLongPress.book)}
           onShare={() => onShareBook(activeLongPress.book)}
@@ -343,7 +345,7 @@ const getBookPages = (book: Book): string => {
 
 type HeatLevel = 0 | 1 | 2 | 3 | 4;
 
-const heatLevels: readonly HeatLevel[] = [0, 1, 2, 3, 4];
+const heatLevels: readonly HeatLevel[] = [0, 1, 3];
 
 const HEATMAP_ROWS = 3;
 const HEATMAP_COLS = 10;

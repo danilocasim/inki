@@ -92,6 +92,7 @@ export default function RootLayout(): ReactElement {
                     <Stack.Screen name="capture/barcode" />
                     <Stack.Screen name="capture/page" />
                     <Stack.Screen name="share/[cardType]" />
+                    <Stack.Screen name="share/book/[id]" />
                   </Stack>
                   <StatusBar style="light" />
                 </>

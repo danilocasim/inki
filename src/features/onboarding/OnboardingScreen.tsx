@@ -24,7 +24,7 @@ import { createBooksRepository } from "../books/repositories/books-repository";
 import type { Book } from "../books/types";
 import { markOnboardingComplete } from "./onboarding-storage";
 
-const TOTAL = 10;
+const TOTAL = 9;
 
 const DEMO_LINES = [
   "The house wants to be filled with people who know its beauty.",
@@ -342,14 +342,15 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
     </>
   );
 
-  // ── step 3: what page ───────────────────────────────────────────
+  // ── step 3: combined bookmark (page + line) ─────────────────────
 
-  const WhatPage = () => (
+  const CombinedBookmark = () => (
     <>
       <Progress />
       <SkipAll />
-      <Text style={s.eyebrow}>YOUR FIRST BOOKMARK · 1 OF 3</Text>
-      <Text style={s.stepTitle}>What page?</Text>
+      <Text style={s.eyebrow}>YOUR FIRST BOOKMARK · 1 OF 2</Text>
+      <Text style={s.stepTitle}>What page & line?</Text>
+
       <View style={s.inputCard}>
         <Text style={s.inputCardLabel}>PAGE NUMBER</Text>
         <TextInput
@@ -360,24 +361,6 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
           value={pageNumber}
         />
       </View>
-      <View style={s.cameraOption}>
-        <Feather color={tokens.color.accent} name="camera" size={16} />
-        <View>
-          <Text style={s.cameraTitle}>or scan with camera</Text>
-          <Text style={s.cameraDesc}>OCR reads the page on-device</Text>
-        </View>
-      </View>
-    </>
-  );
-
-  // ── step 4: pick a line ─────────────────────────────────────────
-
-  const PickLine = () => (
-    <>
-      <Progress />
-      <SkipAll />
-      <Text style={s.eyebrow}>YOUR FIRST BOOKMARK · 2 OF 3</Text>
-      <Text style={s.stepTitle}>Pick a line.</Text>
 
       {/* tabs */}
       <View style={s.tabRow}>
@@ -449,7 +432,7 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
     <>
       <Progress />
       <SkipAll />
-      <Text style={s.eyebrow}>YOUR FIRST BOOKMARK · 3 OF 3</Text>
+      <Text style={s.eyebrow}>YOUR FIRST BOOKMARK · 2 OF 2</Text>
       <Text style={s.stepTitle}>Why this line?</Text>
       <View style={s.quoteCard}>
         <Text style={[s.quoteText, { backgroundColor: hlColor + "44" }]}>{activeLine}</Text>
@@ -706,8 +689,7 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
     { render: Welcome, nav: { label: "begin", onPress: next, showBack: false } },
     { render: Ritual, nav: { label: "i'm in", onPress: next, showBack: true } },
     { render: AddBook, nav: { label: "add this book", onPress: handleAddBook, showBack: true } },
-    { render: WhatPage, nav: { label: "next", onPress: next, showBack: true } },
-    { render: PickLine, nav: { label: "next", onPress: next, showBack: true } },
+    { render: CombinedBookmark, nav: { label: "next", onPress: next, showBack: true } },
     { render: WhyThisLine, nav: { label: "save bookmark", onPress: next, showBack: true } },
     { render: BookmarkSaved, nav: { label: "see your share card", onPress: next, showBack: true } },
     { render: ShareCard, nav: { label: "continue", onPress: next, showBack: true } },
@@ -717,7 +699,7 @@ export function OnboardingScreen({ onComplete }: Props): ReactElement {
 
   const current = STEPS[step] ?? STEPS[0]!;
   const isWelcome = step === 0;
-  const isShareCard = step === 7;
+  const isShareCard = step === 6;
 
   const BottomNav = () => (
     <View style={s.bottomBar}>

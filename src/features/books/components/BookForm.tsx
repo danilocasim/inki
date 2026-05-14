@@ -1,12 +1,18 @@
 import type { ReactElement } from "react";
-import { useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Image, Pressable, StyleSheet, TextInput, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetScrollView,
+  type BottomSheetBackdropProps,
+  type BottomSheetModal as BottomSheetModalType,
+} from "@gorhom/bottom-sheet";
 
 import { allBookStatusOptions } from "../book-status";
 import type { BookStatus, CreateBookInput } from "../types";
-import type { Shelf } from "../../shelves/types";
 import { Button } from "../../../ui/Button";
 import { SegmentedControl } from "../../../ui/SegmentedControl";
 import { Text } from "../../../ui/Text";
@@ -29,10 +35,6 @@ export interface BookFormProps {
   onBack?: () => void;
   onChange?: (values: BookFormValues) => void;
   onSubmit: (input: CreateBookInput) => void;
-  onToggleShelf?: (shelfId: string) => void;
-  selectedShelfIds?: ReadonlySet<string> | undefined;
-  shelfError?: string | undefined;
-  shelfOptions?: readonly Shelf[] | undefined;
   source?: string | undefined;
   submitLabel?: string | undefined;
   values?: BookFormValues | undefined;
@@ -66,6 +68,28 @@ interface FieldErrors {
   title?: string;
 }
 
+export const GENRE_OPTIONS = [
+  "literary fiction",
+  "contemporary",
+  "sci-fi",
+  "fantasy",
+  "historical fiction",
+  "thriller",
+  "mystery",
+  "romance",
+  "non-fiction",
+  "biography",
+  "self-help",
+  "poetry",
+  "graphic novel",
+  "translated",
+  "classic",
+  "family saga",
+  "horror",
+  "essay",
+  "other",
+] as const;
+
 /** Manual-first local book form. Network metadata is always optional. */
 export function BookForm({
   defaultValues,
@@ -74,10 +98,6 @@ export function BookForm({
   onBack,
   onChange,
   onSubmit,
-  onToggleShelf,
-  selectedShelfIds,
-  shelfError,
-  shelfOptions,
   source,
   submitLabel = "Save book",
   values,
@@ -220,11 +240,7 @@ export function BookForm({
         onChangeText={(value) => setField("author", value)}
         value={current.author}
       />
-      <Field
-        label="GENRE"
-        onChangeText={(value) => setField("genre", value)}
-        value={current.genre}
-      />
+      <GenrePicker onChange={(value) => setField("genre", value)} value={current.genre} />
       {isScanned || current.isbn !== "" ? (
         <Field
           editable={!isScanned}
@@ -252,60 +268,6 @@ export function BookForm({
           value={current.status}
         />
       </View>
-
-      {shelfOptions !== undefined ? (
-        <View style={styles.shelfBlock}>
-          <Text tone="muted" variant="eyebrow">
-            SHELVES
-          </Text>
-          {shelfOptions.length > 0 ? (
-            <View style={styles.shelfList}>
-              {shelfOptions.map((shelf) => {
-                const selected = selectedShelfIds?.has(shelf.id) ?? false;
-
-                return (
-                  <Pressable
-                    accessibilityLabel={
-                      selected ? `Remove from ${shelf.title}` : `Add to ${shelf.title}`
-                    }
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                    key={shelf.id}
-                    onPress={() => onToggleShelf?.(shelf.id)}
-                    style={({ pressed }) => [
-                      styles.shelfRow,
-                      selected ? styles.shelfRowSelected : undefined,
-                      pressed ? styles.shelfRowPressed : undefined,
-                    ]}
-                  >
-                    <View style={[styles.shelfAccent, { backgroundColor: shelf.accent }]} />
-                    <View style={styles.shelfCopy}>
-                      <Text variant="bodyStrong">{shelf.title}</Text>
-                      <Text tone="muted" variant="caption">
-                        {shelf.count} {shelf.count === 1 ? "book" : "books"}
-                      </Text>
-                    </View>
-                    <Feather
-                      color={selected ? tokens.color.accent : tokens.color.muted}
-                      name={selected ? "check-circle" : "plus-circle"}
-                      size={18}
-                    />
-                  </Pressable>
-                );
-              })}
-            </View>
-          ) : (
-            <Text tone="muted" variant="caption">
-              No shelves yet
-            </Text>
-          )}
-          {shelfError ? (
-            <Text tone="danger" variant="caption">
-              {shelfError}
-            </Text>
-          ) : null}
-        </View>
-      ) : null}
 
       <Button label={submitLabel} loading={loading} onPress={handleSave} />
     </View>
@@ -363,6 +325,99 @@ function Field({
           {error}
         </Text>
       ) : null}
+    </View>
+  );
+}
+
+interface GenrePickerProps {
+  onChange: (value: string) => void;
+  value: string;
+}
+
+function GenrePicker({ onChange, value }: GenrePickerProps): ReactElement {
+  const sheetRef = useRef<BottomSheetModalType>(null);
+  const snapPoints = useMemo(() => ["55%", "85%"], []);
+
+  const open = (): void => {
+    sheetRef.current?.present();
+  };
+
+  const handleSelect = (genre: string): void => {
+    onChange(genre);
+    sheetRef.current?.dismiss();
+  };
+
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        opacity={0.55}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
+  return (
+    <View style={styles.field}>
+      <View style={styles.fieldHeader}>
+        <Text tone="muted" variant="eyebrow">
+          GENRE
+        </Text>
+      </View>
+      <Pressable
+        accessibilityLabel="GENRE"
+        accessibilityRole="button"
+        onPress={open}
+        style={styles.inputPicker}
+      >
+        <Text style={value === "" ? styles.genrePlaceholder : styles.genreValue}>
+          {value === "" ? "select a genre" : value}
+        </Text>
+        <Feather color={tokens.color.muted} name="chevron-down" size={18} />
+      </Pressable>
+
+      <BottomSheetModal
+        ref={sheetRef}
+        backdropComponent={renderBackdrop}
+        backgroundStyle={styles.genreSheetBackground}
+        enableDynamicSizing={false}
+        enablePanDownToClose
+        handleIndicatorStyle={styles.genreSheetHandle}
+        index={0}
+        snapPoints={snapPoints}
+      >
+        <Text style={styles.genreSheetTitle} variant="sectionTitle">
+          Select a genre
+        </Text>
+        <BottomSheetScrollView contentContainerStyle={styles.genreList}>
+          {GENRE_OPTIONS.map((genre) => {
+            const selected = value === genre;
+            return (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                key={genre}
+                onPress={() => handleSelect(genre)}
+                style={({ pressed }) => [
+                  styles.genreRow,
+                  selected ? styles.genreRowSelected : undefined,
+                  pressed ? styles.genreRowPressed : undefined,
+                ]}
+              >
+                <Text style={selected ? styles.genreRowTextSelected : styles.genreRowText}>
+                  {genre}
+                </Text>
+                {selected ? (
+                  <Feather color={tokens.color.accent} name="check" size={18} />
+                ) : null}
+              </Pressable>
+            );
+          })}
+        </BottomSheetScrollView>
+      </BottomSheetModal>
     </View>
   );
 }
@@ -431,43 +486,80 @@ const styles = StyleSheet.create({
     minHeight: 52,
     paddingHorizontal: tokens.space[4],
   },
+  inputPicker: {
+    alignItems: "center",
+    backgroundColor: tokens.color.black,
+    borderColor: tokens.color.border,
+    borderRadius: tokens.radius.md,
+    borderWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 52,
+    paddingHorizontal: tokens.space[4],
+  },
   inputDisabled: {
     color: tokens.color.inkSoft,
     opacity: 0.85,
   },
-  statusBlock: {
-    gap: tokens.space[2],
+  genreList: {
+    gap: tokens.space[1],
+    paddingBottom: tokens.space[10],
+    paddingHorizontal: tokens.space[5],
+    paddingTop: tokens.space[3],
   },
-  shelfAccent: {
-    alignSelf: "stretch",
-    borderRadius: tokens.radius.pill,
-    width: 4,
-  },
-  shelfBlock: {
-    gap: tokens.space[2],
-  },
-  shelfCopy: {
+  genrePlaceholder: {
+    color: tokens.color.muted,
     flex: 1,
-    gap: 2,
+    fontSize: 16,
   },
-  shelfList: {
-    gap: tokens.space[2],
-  },
-  shelfRow: {
+  genreRow: {
     alignItems: "center",
     backgroundColor: tokens.color.surface,
     borderColor: tokens.color.border,
     borderRadius: tokens.radius.md,
     borderWidth: 1,
     flexDirection: "row",
-    gap: tokens.space[3],
-    minHeight: 58,
-    padding: tokens.space[3],
+    justifyContent: "space-between",
+    minHeight: 52,
+    paddingHorizontal: tokens.space[4],
   },
-  shelfRowPressed: {
+  genreRowPressed: {
     opacity: 0.85,
   },
-  shelfRowSelected: {
+  genreRowSelected: {
     borderColor: tokens.color.accent,
+  },
+  genreRowText: {
+    color: tokens.color.ink,
+    fontSize: 16,
+  },
+  genreRowTextSelected: {
+    color: tokens.color.accent,
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  genreSheetBackground: {
+    backgroundColor: tokens.color.canvas,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+  },
+  genreSheetHandle: {
+    backgroundColor: tokens.color.border,
+    height: 4,
+    width: 44,
+  },
+  genreSheetTitle: {
+    paddingBottom: tokens.space[2],
+    paddingHorizontal: tokens.space[5],
+    paddingTop: tokens.space[2],
+  },
+  genreValue: {
+    color: tokens.color.ink,
+    flex: 1,
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  statusBlock: {
+    gap: tokens.space[2],
   },
 });

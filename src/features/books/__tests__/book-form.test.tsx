@@ -1,17 +1,7 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 
 import { BookForm, bookFormValuesFromDraft } from "../components/BookForm";
-import type { Shelf } from "../../shelves/types";
 import { renderWithProviders } from "../../../test/render";
-
-const shelf = {
-  accent: "#264A78",
-  count: 2,
-  id: "shelf-a",
-  kind: "custom",
-  subtitle: "private shelf",
-  title: "Late Night Reads",
-} satisfies Shelf;
 
 describe("BookForm", () => {
   it("submits scanned ISBN drafts without requiring network metadata", () => {
@@ -65,23 +55,4 @@ describe("BookForm", () => {
     expect(screen.getByText("Page count must be a number")).toBeTruthy();
   });
 
-  it("shows shelf choices and toggles the selected shelf", () => {
-    const onSubmit = jest.fn();
-    const onToggleShelf = jest.fn();
-
-    renderWithProviders(
-      <BookForm
-        onSubmit={onSubmit}
-        onToggleShelf={onToggleShelf}
-        selectedShelfIds={new Set()}
-        shelfOptions={[shelf]}
-      />,
-    );
-
-    expect(screen.getByText("SHELVES")).toBeTruthy();
-
-    fireEvent.press(screen.getByLabelText("Add to Late Night Reads"));
-
-    expect(onToggleShelf).toHaveBeenCalledWith("shelf-a");
-  });
 });

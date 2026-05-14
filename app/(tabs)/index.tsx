@@ -42,8 +42,8 @@ export default function HomeRoute(): ReactElement {
         onPinBook={(book) => void handlePin(book.id)}
         onShareBook={(book) =>
           router.push({
-            pathname: "/share/[cardType]",
-            params: { cardType: "passport", sourceId: book.id },
+            pathname: "/share/book/[id]",
+            params: { id: book.id },
           })
         }
         onShelveBook={(book) => shelfPickerRef.current?.present(book.id)}
