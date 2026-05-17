@@ -111,6 +111,8 @@ export function PrivateProfileScreen({
         </View>
       </View>
 
+      <View style={styles.headerDivider} />
+
       <View style={styles.identityRow}>
         <View style={styles.avatarStack}>
           <View style={styles.avatar}>
@@ -311,6 +313,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: tokens.space[3],
   },
+  headerDivider: {
+    backgroundColor: tokens.color.border,
+    height: 1,
+  },
   identityCopy: {
     flex: 1,
     gap: tokens.space[2],
@@ -340,7 +346,7 @@ const styles = StyleSheet.create({
     gap: tokens.space[4],
   },
   content: {
-    paddingBottom: tokens.space[12],
+    paddingBottom: 112,
   },
   field: {
     gap: tokens.space[2],

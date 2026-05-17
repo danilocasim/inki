@@ -2,33 +2,33 @@
 > inki@0.1.0 test
 > jest --passWithNoTests --silent
 
-PASS src/features/onboarding/__tests__/OnboardingScreen.test.tsx (5.872 s)
-PASS src/features/books/__tests__/BookDetailScreen.test.tsx (6.197 s)
-PASS src/features/dashboard/components/__tests__/LongPressMenu.test.ts (7.16 s)
+PASS src/features/onboarding/__tests__/OnboardingScreen.test.tsx
+PASS src/features/share-cards/__tests__/BookShareScreen.test.tsx
+PASS src/features/books/__tests__/BookDetailScreen.test.tsx
+PASS src/features/dashboard/components/__tests__/LongPressMenu.test.ts
+PASS src/features/books/__tests__/AddBookSheet.test.tsx
 PASS src/features/books/__tests__/book-form.test.tsx
+PASS src/features/quotes/__tests__/validation.test.ts
+PASS src/features/quotes/__tests__/annotations-repository.test.ts
 PASS src/features/__tests__/feature-interactions.test.tsx
 PASS src/features/books/__tests__/validation.test.ts
-PASS src/features/share-cards/__tests__/BookShareScreen.test.tsx (8.421 s)
-PASS src/features/quotes/__tests__/annotations-repository.test.ts
-PASS src/ui/__tests__/primitives.test.tsx
-PASS src/features/dashboard/__tests__/DashboardScreen.test.tsx (8.755 s)
+PASS src/features/books/__tests__/toggle-pin.test.ts
+PASS src/features/dashboard/__tests__/stats-service.test.ts
+PASS src/lib/db/__tests__/database-provider.test.tsx
+PASS src/lib/db/__tests__/schema.test.ts
 PASS src/features/shelves/__tests__/shelves-repository.test.ts
 PASS src/features/import-export/__tests__/library-data-service.test.ts
-PASS src/lib/db/__tests__/database-provider.test.tsx
-PASS app/__tests__/_layout.test.tsx (9.234 s)
-PASS src/features/books/__tests__/AddBookSheet.test.tsx
-PASS src/features/books/__tests__/isbn-service.test.ts
-PASS src/lib/permissions/__tests__/permission-state.test.ts
-PASS src/features/__tests__/figma-screens.test.tsx (9.408 s)
-PASS src/features/quotes/__tests__/validation.test.ts
-PASS src/features/dashboard/__tests__/stats-service.test.ts
-PASS src/features/profile/repositories/__tests__/profile-repository.test.ts
-PASS src/features/books/__tests__/toggle-pin.test.ts
-PASS src/lib/db/__tests__/schema.test.ts
-PASS src/features/dashboard/__tests__/stack-order.test.ts
 PASS src/features/open-library/__tests__/open-library-service.test.ts
+PASS src/features/dashboard/__tests__/stack-order.test.ts
+PASS src/ui/__tests__/primitives.test.tsx
+PASS src/features/profile/repositories/__tests__/profile-repository.test.ts
+PASS src/lib/permissions/__tests__/permission-state.test.ts
+PASS app/__tests__/_layout.test.tsx (6.137 s)
+PASS src/features/books/__tests__/isbn-service.test.ts
+PASS src/features/__tests__/figma-screens.test.tsx (6.688 s)
+PASS src/features/dashboard/__tests__/DashboardScreen.test.tsx (7.13 s)
 
 Test Suites: 25 passed, 25 total
 Tests:       74 passed, 74 total
 Snapshots:   0 total
-Time:        11.457 s
+Time:        8.325 s, estimated 9 s

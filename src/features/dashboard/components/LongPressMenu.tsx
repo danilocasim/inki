@@ -27,9 +27,12 @@ import { tokens } from "../../../ui/tokens";
 
 export type LongPressColumn = 0 | 1 | 2;
 
+export type LongPressActionKey = "pin" | "share" | "shelf";
+
 export interface LongPressMenuProps {
   book: Book;
   column?: LongPressColumn;
+  hoveredAction?: LongPressActionKey | null;
   onDismiss: () => void;
   onPin: () => void;
   onShare: () => void;
@@ -58,6 +61,7 @@ const ACTION_TILE_GAP = 18;
 export function LongPressMenu({
   book,
   column = 1,
+  hoveredAction = null,
   onDismiss,
   onPin,
   onShare,
@@ -83,7 +87,7 @@ export function LongPressMenu({
   }, []);
 
   useEffect(() => {
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined);
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => undefined);
 
     if (reduceMotion) {
       opacity.value = 1;
@@ -94,6 +98,7 @@ export function LongPressMenu({
     } else {
       opacity.value = withTiming(1, FADE_IN);
       tileScale.value = withSpring(TILE_SCALE, TILE_SPRING);
+      // Staggered pop-in for the action icons.
       shareScale.value = withSpring(1, BTN_SPRING);
       pinScale.value = withDelay(40, withSpring(1, BTN_SPRING));
       shelfScale.value = withDelay(80, withSpring(1, BTN_SPRING));
@@ -206,6 +211,7 @@ export function LongPressMenu({
             accessibilityLabel={book.isPinned ? "Unpin book" : "Pin book"}
             active={book.isPinned}
             animatedStyle={pinStyle}
+            hovered={hoveredAction === "pin"}
             icon="map-pin"
             label={book.isPinned ? "Unpin" : "Pin"}
             onPress={() => dismiss(onPin)}
@@ -221,6 +227,7 @@ export function LongPressMenu({
           <ActionButton
             accessibilityLabel="Share book"
             animatedStyle={shareStyle}
+            hovered={hoveredAction === "share"}
             icon="share-2"
             innerRef={shareRef}
             label="Share"
@@ -237,6 +244,7 @@ export function LongPressMenu({
           <ActionButton
             accessibilityLabel="Add to shelf"
             animatedStyle={shelfStyle}
+            hovered={hoveredAction === "shelf"}
             icon="layers"
             label="Shelf"
             onPress={() => dismiss(onShelf)}
@@ -251,6 +259,7 @@ interface ActionButtonProps {
   accessibilityLabel: string;
   active?: boolean;
   animatedStyle: ReturnType<typeof useAnimatedStyle>;
+  hovered?: boolean;
   icon: React.ComponentProps<typeof Feather>["name"];
   innerRef?: React.Ref<View>;
   label: string;
@@ -261,11 +270,18 @@ function ActionButton({
   accessibilityLabel,
   active = false,
   animatedStyle,
+  hovered = false,
   icon,
   innerRef,
   label,
   onPress,
 }: ActionButtonProps): ReactElement {
+  const iconColor = hovered
+    ? tokens.color.black
+    : active
+      ? tokens.color.accent
+      : tokens.color.ink;
+
   return (
     <Animated.View ref={innerRef} style={[styles.actionWrap, animatedStyle]}>
       <Pressable
@@ -276,13 +292,14 @@ function ActionButton({
         style={({ pressed }) => [
           styles.actionBtn,
           active ? styles.actionBtnActive : undefined,
+          hovered ? styles.actionBtnHovered : undefined,
           pressed ? styles.actionPressed : undefined,
         ]}
       >
-        <Feather color={active ? tokens.color.accent : tokens.color.ink} name={icon} size={22} />
+        <Feather color={iconColor} name={icon} size={22} />
       </Pressable>
       <Text
-        style={[styles.actionLabel, active ? styles.actionLabelActive : undefined]}
+        style={[styles.actionLabel, active || hovered ? styles.actionLabelActive : undefined]}
         variant="caption"
       >
         {label}
@@ -431,6 +448,32 @@ export function computeColumnActionLayout(
   };
 }
 
+const HIT_TEST_PADDING = 14;
+
+/** Returns which action a finger at (x, y) screen coords is hovering, or null. */
+export function hitTestAction(
+  layout: ColumnActionLayout,
+  x: number,
+  y: number,
+): LongPressActionKey | null {
+  const keys: LongPressActionKey[] = ["pin", "share", "shelf"];
+
+  for (const key of keys) {
+    const pos = layout[key];
+    const within =
+      x >= pos.x - HIT_TEST_PADDING &&
+      x <= pos.x + BTN_DIAMETER + HIT_TEST_PADDING &&
+      y >= pos.y - HIT_TEST_PADDING &&
+      y <= pos.y + BTN_DIAMETER + HIT_TEST_PADDING;
+
+    if (within) {
+      return key;
+    }
+  }
+
+  return null;
+}
+
 const styles = StyleSheet.create({
   actionAbsolute: {
     position: "absolute",
@@ -448,6 +491,11 @@ const styles = StyleSheet.create({
   },
   actionBtnActive: {
     borderColor: tokens.color.accent,
+  },
+  actionBtnHovered: {
+    backgroundColor: tokens.color.accent,
+    borderColor: tokens.color.accent,
+    transform: [{ scale: 1.15 }],
   },
   actionLabel: {
     color: tokens.color.white,

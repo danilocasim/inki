@@ -4,6 +4,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import { buildDashboardData } from "../services/stats-service";
 import type { DashboardData } from "../types";
 import { listBooks } from "../../books/repositories/books-repository";
+import { countBookmarksByDay } from "../../quotes/repositories/annotations-repository";
 
 export interface DashboardDataState {
   data: DashboardData | undefined;
@@ -24,8 +25,11 @@ export function useDashboardData(): DashboardDataState {
     setError(undefined);
 
     try {
-      const books = await listBooks(db);
-      setData(buildDashboardData(books));
+      const [books, bookmarkCounts] = await Promise.all([
+        listBooks(db),
+        countBookmarksByDay(db)
+      ]);
+      setData(buildDashboardData(books, bookmarkCounts));
     } catch (caught) {
       setError(caught instanceof Error ? caught : new Error("Unable to load dashboard."));
     } finally {

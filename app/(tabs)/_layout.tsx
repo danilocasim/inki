@@ -2,29 +2,14 @@ import type { ReactElement } from "react";
 import { Tabs } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 
-import { tokens } from "../../src/ui/tokens";
+import { GlassTabBar } from "../../src/ui/GlassTabBar";
 
-/** Bottom tab shell matching the Figma labels exactly. */
+/** Bottom tab shell — glassmorphism floating capsule with drag-to-select. */
 export default function TabsLayout(): ReactElement {
   return (
     <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: tokens.color.accent,
-        tabBarInactiveTintColor: tokens.color.muted,
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "800",
-          textTransform: "lowercase"
-        },
-        tabBarStyle: {
-          backgroundColor: tokens.color.canvas,
-          borderTopColor: tokens.color.border,
-          height: 78,
-          paddingBottom: 18,
-          paddingTop: 8
-        }
-      }}
+      screenOptions={{ headerShown: false }}
+      tabBar={(props) => <GlassTabBar {...props} />}
     >
       <Tabs.Screen
         name="index"
