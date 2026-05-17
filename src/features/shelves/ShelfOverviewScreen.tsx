@@ -93,6 +93,8 @@ export function ShelfOverviewScreen({
         </View>
       </View>
 
+      <View style={styles.headerDivider} />
+
       {query.length > 0 ? (
         <TextInput
           autoFocus
@@ -245,7 +247,7 @@ const styles = StyleSheet.create({
     gap: tokens.space[4]
   },
   content: {
-    paddingBottom: tokens.space[12]
+    paddingBottom: 112
   },
   header: {
     alignItems: "center",
@@ -255,7 +257,11 @@ const styles = StyleSheet.create({
   headerActions: {
     alignItems: "center",
     flexDirection: "row",
-    gap: tokens.space[3]
+    gap: tokens.space[2]
+  },
+  headerDivider: {
+    backgroundColor: tokens.color.border,
+    height: 1
   },
   createCard: {
     gap: tokens.space[3]

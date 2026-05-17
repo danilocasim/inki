@@ -58,6 +58,24 @@ export const listBookmarks = async (db: DatabaseReader, bookId: string): Promise
   return rows.map(mapBookmarkRow);
 };
 
+/** Counts saved bookmarks per calendar day across all books, keyed by YYYY-MM-DD. */
+export const countBookmarksByDay = async (
+  db: DatabaseReader
+): Promise<Record<string, number>> => {
+  const rows = await db.getAllAsync<{ day: string; total: number }>(
+    `SELECT substr(created_at, 1, 10) AS day, COUNT(*) AS total
+     FROM bookmarks
+     GROUP BY day;`
+  );
+
+  const counts: Record<string, number> = {};
+  for (const row of rows) {
+    counts[row.day] = row.total;
+  }
+
+  return counts;
+};
+
 export const listBookNotes = async (db: DatabaseReader, bookId: string): Promise<BookNote[]> => {
   const rows = await db.getAllAsync<BookNoteRow>(
     `SELECT id, book_id, title, body, page, created_at, updated_at

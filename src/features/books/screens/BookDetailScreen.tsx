@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { useEffect, useState } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 import Slider from "@react-native-community/slider";
+import * as Haptics from "expo-haptics";
 
 import { BookCover } from "../BookCover";
 import { BookForm, bookFormValuesFromDraft } from "../components/BookForm";
@@ -64,6 +65,11 @@ export function BookDetailScreen({
   const sliderMax = book.totalPages ?? 100;
   const parsedNextPage = parseSliderPage(nextPage, sliderMax);
   const liveProgress = computeLiveProgress(nextPage, book.totalPages);
+
+  const handleSliderChange = (value: number): void => {
+    setNextPage(String(Math.round(value)));
+    void Haptics.selectionAsync().catch(() => undefined);
+  };
 
   const handleSaveProgress = async (): Promise<void> => {
     const currentPage = parsePage(nextPage, book.currentPage, book.totalPages);
@@ -189,12 +195,25 @@ export function BookDetailScreen({
           maximumValue={sliderMax}
           minimumTrackTintColor={tokens.color.accent}
           minimumValue={0}
-          onValueChange={(value) => setNextPage(String(Math.round(value)))}
+          onSlidingComplete={() => {
+            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(
+              () => undefined,
+            );
+          }}
+          onValueChange={handleSliderChange}
           step={1}
           style={styles.progressSlider}
           thumbTintColor={tokens.color.accent}
           value={parsedNextPage}
         />
+        <View style={styles.progressMeta}>
+          <Text tone="accent" variant="caption">
+            page {parsedNextPage}
+          </Text>
+          <Text tone="muted" variant="caption">
+            {book.totalPages ? `of ${book.totalPages}` : "of ?"}
+          </Text>
+        </View>
       </Card>
 
       <Card style={styles.formCard}>
@@ -467,6 +486,10 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     minHeight: 120,
     paddingVertical: tokens.space[3],
+  },
+  progressMeta: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   progressSlider: {
     height: 44,

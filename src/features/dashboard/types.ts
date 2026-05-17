@@ -9,6 +9,8 @@ export interface StatValue {
 export interface DashboardData {
   activeBooks: Book[];
   books: Book[];
+  /** Saved-bookmark count for each day of the current month (index 0 = day 1). */
+  pulseDays: number[];
   pulseItems: string[];
   stats: StatValue[];
   yearlyStats: StatValue[];

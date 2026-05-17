@@ -9,6 +9,7 @@ import { DashboardScreen } from "../../src/features/dashboard/DashboardScreen";
 import { useDashboardData } from "../../src/features/dashboard/hooks/use-dashboard-data";
 import { togglePin } from "../../src/features/books/repositories/books-repository";
 import { ShelfPicker, type ShelfPickerHandle } from "../../src/features/shelves/ShelfPicker";
+import { TabSwipeArea } from "../../src/ui/TabSwipeArea";
 
 export default function HomeRoute(): ReactElement {
   const router = useRouter();
@@ -33,21 +34,29 @@ export default function HomeRoute(): ReactElement {
 
   return (
     <>
-      <DashboardScreen
-        data={data}
-        loading={loading}
-        onAddBook={() => router.push("/(modals)/log-book")}
-        onOpenBook={(bookId) => router.push({ pathname: "/book/[id]", params: { id: bookId } })}
-        onOpenNotifications={() => router.push("/notifications")}
-        onPinBook={(book) => void handlePin(book.id)}
-        onShareBook={(book) =>
-          router.push({
-            pathname: "/share/book/[id]",
-            params: { id: book.id },
-          })
-        }
-        onShelveBook={(book) => shelfPickerRef.current?.present(book.id)}
-      />
+      <TabSwipeArea current="index">
+        <DashboardScreen
+          data={data}
+          loading={loading}
+          onAddBook={() => router.push("/(modals)/log-book")}
+          onOpenBook={(bookId) => router.push({ pathname: "/book/[id]", params: { id: bookId } })}
+          onOpenNotifications={() => router.push("/notifications")}
+          onPinBook={(book) => void handlePin(book.id)}
+          onShareBook={(book) =>
+            router.push({
+              pathname: "/share/book/[id]",
+              params: { id: book.id },
+            })
+          }
+          onSharePulse={() =>
+            router.push({
+              pathname: "/share/[cardType]",
+              params: { cardType: "wrapped" },
+            })
+          }
+          onShelveBook={(book) => shelfPickerRef.current?.present(book.id)}
+        />
+      </TabSwipeArea>
       <ShelfPicker onChange={() => void reload()} ref={shelfPickerRef} />
     </>
   );
